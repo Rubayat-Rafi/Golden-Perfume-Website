@@ -1,0 +1,35 @@
+[
+  {
+    "title": "About",
+    "navLinks": [
+      { "name": "About us", "path": "/about" },
+      { "name": "Categories", "path": "/categories" },
+      { "name": "Shop", "path": "/shop" },
+      { "name": "Blog", "path": "/blog" },
+      { "name": "FAQ", "path": "/faq" },
+      { "name": "Contacts", "path": "/contact" }
+    ]
+  },
+  {
+    "title": "Categories",
+    "navLinks": [
+      { "name": "Fragrance Oils", "path": "/shop/fragrance-oils" },
+      { "name": "Incense", "path": "/shop/incense" },
+      { "name": "Perfume Oils", "path": "/shop/perfume-oils" },
+      { "name": "Botanicals", "path": "/shop/botanicals" },
+      { "name": "Skin Care", "path": "/shop/skin-care" },
+      { "name": "Hair Care", "path": "/shop/hair-care" }
+    ]
+  },
+  {
+    "title": "Useful links",
+    "navLinks": [
+      { "name": "Careers", "path": "/about" },
+      { "name": "Privacy policy", "path": "/faq" },
+      { "name": "Terms of use", "path": "/about" },
+      { "name": "Support", "path": "/contact" },
+      { "name": "Shipping details", "path": "/about" },
+      { "name": "Information", "path": "/about" }
+    ]
+  }
+]

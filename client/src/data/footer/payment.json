@@ -1,0 +1,6 @@
+[
+  { "icon": "/assets/img/payment1.png", "alt": "Payment method 1" },
+  { "icon": "/assets/img/payment2.png", "alt": "Payment method 2" },
+  { "icon": "/assets/img/payment3.png", "alt": "Payment method 3" },
+  { "icon": "/assets/img/payment4.png", "alt": "Payment method 4" }
+]
