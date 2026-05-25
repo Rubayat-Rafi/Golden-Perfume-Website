@@ -20,7 +20,7 @@ const Footer = () => {
     <footer className="bg-dark-green pb-4 z-[1]">
       <div className="max-w-[1280px] mx-auto px-4 md:px-8 xl:px-15">
         {/* Footer top */}
-        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start py-10 md:py-[60px] gap-6 border-b border-white/10">
+        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start py-10 md:py-15 gap-6 border-b border-white/10">
           {/* Social */}
           <div className="order-2 sm:order-1 text-center sm:text-left">
             <span className="font-lato text-sage text-base leading-[170%] block mb-2">
@@ -48,7 +48,7 @@ const Footer = () => {
           <div className="order-1 sm:order-2 mt-0 sm:mt-2.5 sm:ml-20 md:ml-0">
             <Link to="/">
               <img
-                src="/assets/img/footer-logo.svg"
+                src="/logo.png"
                 alt="Golden Perfume"
                 className="h-[61px] w-auto"
               />
@@ -75,13 +75,13 @@ const Footer = () => {
         </div>
 
         {/* Footer nav */}
-        <div className="flex flex-wrap justify-between py-10 md:py-[60px] border-b border-white/10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 py-10 md:py-15 border-b border-white/10">
           {footerNavData.map((nav, idx) => (
             <NavCol nav={nav} key={idx} />
           ))}
 
           {/* Contact column */}
-          <div className="w-[45%] sm:w-1/4 max-w-[215px] mb-6 md:mb-0 md:mr-[50px]">
+          <div className="col-span-2 sm:col-span-1 min-w-0">
             <span className="block font-playfair text-2xl leading-none text-linen capitalize mb-6">
               Contact
             </span>
@@ -107,7 +107,7 @@ const Footer = () => {
                 <Mail size={21} className="shrink-0 mr-[15px] mt-1" />
                 <a
                   href="mailto:info@goldenfragrances.com"
-                  className="font-lato text-sage text-base hover:text-gold transition-colors duration-200"
+                  className="font-lato text-sage text-base hover:text-gold transition-colors duration-200 break-all"
                 >
                   info@goldenfragrances.com
                 </a>

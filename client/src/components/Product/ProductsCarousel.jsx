@@ -9,11 +9,11 @@ const ArrowBtn = ({ onClick, disabled, dir }) => (
   <button
     onClick={onClick}
     disabled={disabled}
-    className={`absolute ${dir === 'prev' ? 'left-9' : 'right-9'} top-[45%] -translate-y-1/2 w-10 h-15 bg-[#faf9ff] border border-[#eee] flex items-center justify-center hover:bg-dark-green hover:border-dark-green group transition-all duration-300 z-10 disabled:opacity-50 disabled:pointer-events-none cursor-pointer`}
+    className={`absolute ${dir === 'prev' ? 'left-2 md:left-9' : 'right-2 md:right-9'} top-[45%] -translate-y-1/2 w-8 h-12 md:w-10 md:h-15 bg-[#faf9ff] border border-[#eee] flex items-center justify-center hover:bg-dark-green hover:border-dark-green group transition-all duration-300 z-10 disabled:opacity-50 disabled:pointer-events-none cursor-pointer`}
   >
     {dir === 'prev'
-      ? <ChevronLeft size={20} className="text-[#999] group-hover:text-white transition-colors duration-300" />
-      : <ChevronRight size={20} className="text-[#999] group-hover:text-white transition-colors duration-300" />
+      ? <ChevronLeft size={18} className="text-[#999] group-hover:text-white transition-colors duration-300" />
+      : <ChevronRight size={18} className="text-[#999] group-hover:text-white transition-colors duration-300" />
     }
   </button>
 );
@@ -37,7 +37,7 @@ const ProductsCarousel = ({ products }) => {
   };
 
   return (
-    <div className="relative px-28.75">
+    <div className="relative px-12 md:px-28.75">
       <ArrowBtn dir="prev" onClick={() => sliderRef.current?.slickPrev()} />
       <Slider ref={sliderRef} {...settings}>
         {products.map((product) => (

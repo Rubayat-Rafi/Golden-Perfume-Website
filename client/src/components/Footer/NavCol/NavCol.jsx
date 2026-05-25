@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export const NavCol = ({ nav }) => {
   return (
-    <div className="w-[45%] sm:w-1/4 max-w-[215px] mb-6 md:mb-0">
+    <div className="min-w-0">
       <span className="block font-playfair text-2xl md:text-[24px] leading-none text-linen capitalize mb-6">
         {nav.title}
       </span>
