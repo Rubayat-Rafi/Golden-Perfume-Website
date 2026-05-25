@@ -9,6 +9,7 @@ import WishlistPage from "../pages/Wishlist/WishlistPage";
 import ShopPage from "../pages/Shop/ShopPage";
 import ProductDetail from "../pages/ProductDetail/ProductDetail";
 import ProtectedRoute from "../components/Auth/ProtectedRoute";
+import ContactPage from "../pages/Contact/ContactPage";
 
 // Stub pages for protected routes — replace with real pages as you build them
 const Stub = ({ title }) => (
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
       { path: "cart",        element: <CartPage /> },
       { path: "wishlist",    element: <WishlistPage /> },
       { path: "product/:id", element: <ProductDetail /> },
+      { path: "contact",    element: <ContactPage /> },
 
       // Any authenticated user
       {

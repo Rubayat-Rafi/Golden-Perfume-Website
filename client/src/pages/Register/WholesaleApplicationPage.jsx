@@ -78,11 +78,14 @@ const WholesaleApplicationPage = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#faf9ff] flex flex-col items-center justify-center px-4 py-16">
+      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-16">
         <div className="w-full max-w-lg bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] px-8 py-14 text-center">
-          <div className="w-20 h-20 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-7">
+          <Link to="/" className="inline-block mb-8">
+            <img src="/logo.png" alt="Golden Perfume" className="h-16 w-auto mx-auto" />
+          </Link>
+          <div className="w-20 h-20 rounded-full bg-brand-green/10 flex items-center justify-center mx-auto mb-7">
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-              <path d="M6 18L14 26L30 10" stroke="#C4A24A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M6 18L14 26L30 10" stroke="#267B44" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <h2 className="font-playfair text-[30px] text-[#222] mb-4">Application Received</h2>
@@ -104,16 +107,18 @@ const WholesaleApplicationPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf9ff] px-4 py-16">
-      {/* Logo */}
-      <div className="text-center mb-10">
-        <Link
-          to="/"
-          className="font-playfair text-[22px] uppercase tracking-[4px] text-forest hover:text-gold transition-colors duration-200"
-        >
-          Golden Perfume
+    <div className="min-h-screen bg-cream">
+      {/* Top bar with logo */}
+      <div className="bg-dark-green px-6 py-5 flex items-center justify-between">
+        <Link to="/">
+          <img src="/logo.png" alt="Golden Perfume" className="h-12 w-auto" />
+        </Link>
+        <Link to="/login" className="font-lato text-[12px] uppercase tracking-[1.5px] text-white/60 hover:text-gold transition-colors duration-200">
+          Sign In
         </Link>
       </div>
+
+      <div className="px-4 py-12">
 
       {/* Card */}
       <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] px-8 py-10 md:px-14 md:py-12">
@@ -278,6 +283,7 @@ const WholesaleApplicationPage = () => {
             Customer account
           </Link>
         </p>
+      </div>
       </div>
     </div>
   );

@@ -56,12 +56,12 @@ export const navItem = [
   },
   {
     id: 3,
-    name: 'Sales',
-    path: '/sales',
+    name: 'Sales & Offers',
+    path: '/shop?sale=1',
     subNav: [
-      { name: 'Current Deals',  path: '/sales/deals' },
-      { name: 'Clearance',      path: '/sales/clearance' },
-      { name: 'Bundle Offers',  path: '/sales/bundles' },
+      { name: 'All Deals',      path: '/shop?sale=1' },
+      { name: 'Lowest Price',   path: '/shop?sale=1&sort=price-asc' },
+      { name: 'Highest Price',  path: '/shop?sale=1&sort=price-desc' },
     ],
   },
   { id: 4, name: 'Wholesale', path: '/wholesale' },

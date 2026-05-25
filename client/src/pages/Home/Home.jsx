@@ -10,6 +10,7 @@ import Advantage from "../../components/Advantage/Advantage";
 import Info from "../../components/Info/Info";
 import LatestNews from "../../components/LatestNews/LatestNews";
 import Subscribe from "../../components/Subscribe/Subscribe";
+import FAQ from "../../components/FAQ/FAQ";
 
 const Home = () => {
   return (
@@ -34,6 +35,7 @@ const Home = () => {
       {/* <Trending /> */}
       {/* <Advantage /> */}
       {/* <Info /> */}
+      <FAQ />
       <LatestNews />
       <Subscribe />
     </>
