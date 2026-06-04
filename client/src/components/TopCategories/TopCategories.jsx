@@ -1,9 +1,10 @@
-import { useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import SliderLib from 'react-slick';
 import SectionTitle from '../shared/SectionTitle/SectionTitle';
-import categories from '../../data/category/category.json';
+import { api } from '../../lib/api';
+import { normalizeCategory } from '../../lib/normalize';
 
 const Slider = SliderLib.default ?? SliderLib;
 
@@ -35,23 +36,16 @@ const ArrowBtn = ({ onClick, dir }) => (
 );
 
 const CategoryCard = ({ cat }) => (
-  <Link
-    to={toShopUrl(cat.slug)}
-    className="mx-0.5 block group"
-  >
+  <Link to={toShopUrl(cat.slug)} className="mx-0.5 block group">
     <div className="bg-white overflow-hidden border border-[#f0f0f0] shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-300">
-      {/* Image */}
       <div className="relative aspect-square overflow-hidden">
         <img
-          src={cat.img}
+          src={cat.image}
           alt={cat.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        {/* Hover tint */}
         <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/10 transition-colors duration-300" />
       </div>
-
-      {/* Name */}
       <div className="px-1.5 py-2.5 text-center">
         <span className="font-lato text-[10px] md:text-[12px] text-[#444] leading-snug block capitalize font-bold tracking-[0.5px] line-clamp-2">
           {cat.name}
@@ -63,18 +57,19 @@ const CategoryCard = ({ cat }) => (
 
 const TopCategories = () => {
   const sliderRef = useRef(null);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    api.get('/categories')
+      .then((d) => setCategories((d.data || []).map(normalizeCategory)))
+      .catch(() => {});
+  }, []);
 
   const settings = {
-    dots: false,
-    arrows: false,
-    infinite: true,
-    autoplay: true,
-    autoplaySpeed: 2200,
-    speed: 600,
-    cssEase: 'ease-in-out',
-    pauseOnHover: true,
-    slidesToShow: 9,
-    slidesToScroll: 1,
+    dots: false, arrows: false, infinite: true,
+    autoplay: true, autoplaySpeed: 2200, speed: 600,
+    cssEase: 'ease-in-out', pauseOnHover: true,
+    slidesToShow: 9, slidesToScroll: 1,
     responsive: [
       { breakpoint: 1280, settings: { slidesToShow: 8 } },
       { breakpoint: 1024, settings: { slidesToShow: 6 } },
@@ -85,9 +80,10 @@ const TopCategories = () => {
     ],
   };
 
+  if (!categories.length) return null;
+
   return (
     <section className="overflow-hidden pt-8 md:pt-12 pb-8 md:pb-12 bg-cream">
-      {/* Heading — constrained */}
       <div className="max-w-305 mx-auto px-4 md:px-10">
         <SectionTitle
           subTitle="Browse Collections"
@@ -95,17 +91,13 @@ const TopCategories = () => {
           body="From fragrance oils to herbal smudges — explore our full range of natural products."
         />
       </div>
-
-      {/* Carousel — full width */}
       <div className="relative px-2 md:px-4 group/carousel">
         <ArrowBtn dir="prev" onClick={() => sliderRef.current?.slickPrev()} />
-
         <Slider ref={sliderRef} {...settings}>
           {categories.map((cat) => (
             <CategoryCard key={cat.id} cat={cat} />
           ))}
         </Slider>
-
         <ArrowBtn dir="next" onClick={() => sliderRef.current?.slickNext()} />
       </div>
     </section>

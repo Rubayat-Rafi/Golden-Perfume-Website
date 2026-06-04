@@ -7,6 +7,9 @@ import authRoutes from './routes/authRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import wholesaleRoutes from './routes/wholesaleRoutes.js';
+import promoRoutes from './routes/promoRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
 
 const app = express();
 
@@ -24,6 +27,9 @@ app.use('/api/auth',       authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products',   productRoutes);
 app.use('/api/orders',     orderRoutes);
+app.use('/api/wholesale',  wholesaleRoutes);
+app.use('/api/promo',      promoRoutes);
+app.use('/api/contact',    contactRoutes);
 
 // ── Global error handler (must be last) ─────────────────────────────────────
 app.use(errorHandler);

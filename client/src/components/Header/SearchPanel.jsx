@@ -1,10 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Search, X, Package } from 'lucide-react';
 import SingleProduct from '../Product/SingleProduct';
-import allProducts from '../../data/product/product.json';
+import { api } from '../../lib/api';
+import { normalizeProduct } from '../../lib/normalize';
 
 const SearchPanel = ({ query, onChange, onClose }) => {
   const inputRef = useRef(null);
+  const [results,  setResults]  = useState([]);
+  const [loading,  setLoading]  = useState(false);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -16,15 +19,23 @@ const SearchPanel = ({ query, onChange, onClose }) => {
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const q = query.trim().toLowerCase();
-  const results = q
-    ? allProducts.filter((p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category?.toLowerCase().includes(q) ||
-        p.description?.toLowerCase().includes(q) ||
-        p.content?.toLowerCase().includes(q)
-      )
-    : [];
+  // Debounced API search
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) { setResults([]); return; }
+
+    setLoading(true);
+    const timer = setTimeout(() => {
+      api.get(`/products?search=${encodeURIComponent(q)}&limit=8`)
+        .then((d) => setResults((d.data || []).map(normalizeProduct)))
+        .catch(() => setResults([]))
+        .finally(() => setLoading(false));
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const q = query.trim();
 
   return (
     <div className="absolute top-full left-0 w-full bg-cream shadow-[0_8px_32px_rgba(0,0,0,0.12)] z-50 border-t border-linen">
@@ -38,11 +49,10 @@ const SearchPanel = ({ query, onChange, onClose }) => {
             value={query}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Search products, categories…"
-            className="w-full h-12 pl-11 pr-10 bg-white border border-linen font-lato text-[14px] text-dark-green placeholder:text-dark-green/30 outline-none focus:border-brand-green/50 focus:ring-1 focus:ring-brand-green/20 rounded-sm transition-colors"
+            className="w-full h-12 pl-11 pr-10 bg-white border border-linen font-lato text-[14px] text-dark-green placeholder:text-dark-green/30 outline-none focus:border-brand-green/60 focus:ring-1 focus:ring-brand-green/20 rounded-sm transition-colors"
           />
           {query && (
-            <button
-              onClick={() => onChange('')}
+            <button onClick={() => onChange('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-green/30 hover:text-dark-green transition-colors cursor-pointer"
               aria-label="Clear search"
             >
@@ -55,7 +65,12 @@ const SearchPanel = ({ query, onChange, onClose }) => {
       {/* Results */}
       {q && (
         <div className="max-w-305 mx-auto px-4 md:px-10 pb-6 max-h-[60vh] overflow-y-auto">
-          {results.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center gap-3 py-6 text-dark-green/40">
+              <div className="w-4 h-4 border-2 border-brand-green/30 border-t-brand-green rounded-full animate-spin" />
+              <span className="font-lato text-[14px]">Searching…</span>
+            </div>
+          ) : results.length === 0 ? (
             <div className="flex items-center gap-3 py-6 text-dark-green/40">
               <Package size={20} />
               <span className="font-lato text-[14px]">No results for &ldquo;{query}&rdquo;</span>
@@ -65,10 +80,7 @@ const SearchPanel = ({ query, onChange, onClose }) => {
               <p className="font-lato text-[12px] text-dark-green/40 mb-4">
                 {results.length} result{results.length !== 1 ? 's' : ''} for &ldquo;<span className="text-brand-green">{query}</span>&rdquo;
               </p>
-              <div
-                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"
-                onClick={onClose}
-              >
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" onClick={onClose}>
                 {results.map((product) => (
                   <SingleProduct key={product.id} product={product} />
                 ))}
