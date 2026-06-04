@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const RegisterPage = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, register } = useAuth();
   const navigate = useNavigate();
 
   const [accountType, setAccountType] = useState('customer');
@@ -40,9 +40,19 @@ const RegisterPage = () => {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSubmitting(false);
-    setSuccess(true);
+    try {
+      await register({
+        name:     `${form.firstName.trim()} ${form.lastName.trim()}`,
+        email:    form.email.trim(),
+        password: form.password,
+        phone:    form.phone.trim(),
+      });
+      setSuccess(true);
+    } catch (err) {
+      setErrors({ form: err.message || 'Registration failed. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (success) {
@@ -119,6 +129,12 @@ const RegisterPage = () => {
           <p className="font-lato text-[14px] text-[#999] mb-7">
             Join Golden Perfume — wholesale &amp; retail fragrance oils
           </p>
+
+          {errors.form && (
+            <div className="bg-red-50 border border-red-200 text-red-600 font-lato text-[13px] rounded-lg px-4 py-3 mb-6">
+              {errors.form}
+            </div>
+          )}
 
           {/* Account type toggle */}
           <div className="flex gap-2 mb-7 p-1 bg-linen/60 rounded-lg">

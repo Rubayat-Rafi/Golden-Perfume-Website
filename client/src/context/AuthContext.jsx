@@ -1,16 +1,7 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useCallback } from 'react';
+import { api, setToken, clearToken } from '../lib/api';
 
 export const AuthContext = createContext(null);
-
-// Mock users for development — replace login() body with real API call later
-const MOCK_USERS = {
-  'customer@test.com':  { name: 'Alex Johnson',    email: 'customer@test.com',  role: 'customer'  },
-  'wholesale@test.com': { name: 'Metro Beauty Co', email: 'wholesale@test.com', role: 'wholesale' },
-  'staff@test.com':     { name: 'Staff Member',    email: 'staff@test.com',     role: 'staff'     },
-  'admin@test.com':     { name: 'Admin User',      email: 'admin@test.com',     role: 'admin'     },
-};
-
-const STORAGE_KEY = 'gp_auth_user';
 
 const ROLE_REDIRECTS = {
   customer:  '/profile',
@@ -20,42 +11,59 @@ const ROLE_REDIRECTS = {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser]       = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restore session from localStorage on mount
+  // On mount: try to restore session using the httpOnly refresh cookie.
+  // If the cookie is still valid the server issues a new access token.
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setUser(JSON.parse(stored));
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-    setIsLoading(false);
+    const restore = async () => {
+      try {
+        const data = await api.auth('/auth/refresh', {});
+        setToken(data.accessToken);
+        const me = await api.get('/auth/me');
+        setUser(me.user);
+      } catch {
+        // No valid session — user stays logged out
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    restore();
   }, []);
 
+  // ── login ──────────────────────────────────────────────────────────────
   const login = async (email, password) => {
-    // --- Replace this block with: const res = await fetch('/api/auth/login', {...}) ---
-    const mock = MOCK_USERS[email.toLowerCase().trim()];
-    if (!mock || !password) throw new Error('Invalid email or password');
-    // --- End of mock block ---
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mock));
-    setUser(mock);
-    return mock;
+    const data = await api.auth('/auth/login', { email, password });
+    setToken(data.accessToken);
+    setUser(data.user);
+    return data.user;
   };
 
-  const logout = () => {
-    localStorage.removeItem(STORAGE_KEY);
+  // ── register ───────────────────────────────────────────────────────────
+  const register = async ({ name, email, password, phone = '' }) => {
+    const data = await api.auth('/auth/register', { name, email, password, phone });
+    setToken(data.accessToken);
+    setUser(data.user);
+    return data.user;
+  };
+
+  // ── logout ─────────────────────────────────────────────────────────────
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout', {});
+    } catch { /* always clear locally even if server call fails */ }
+    clearToken();
     setUser(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{
       user,
-      role: user?.role ?? null,
+      role:         user?.role ?? null,
       isLoading,
       login,
+      register,
       logout,
       roleRedirect: ROLE_REDIRECTS,
     }}>

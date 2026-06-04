@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import { api } from '../../lib/api';
 
 const BUSINESS_TYPES = ['LLC', 'Corporation', 'Sole Proprietorship', 'Partnership', 'Non-Profit', 'Other'];
 const ORDER_RANGES   = ['Under $500/mo', '$500 – $1,000/mo', '$1,000 – $5,000/mo', '$5,000 – $10,000/mo', 'Over $10,000/mo'];
@@ -70,10 +71,19 @@ const WholesaleApplicationPage = () => {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     setSubmitting(true);
-    // --- Replace with: await fetch('/api/auth/wholesale-apply', { method: 'POST', body: JSON.stringify({...form, interests}) }) ---
-    await new Promise((r) => setTimeout(r, 1000));
-    setSubmitting(false);
-    setSubmitted(true);
+    try {
+      await api.auth('/auth/wholesale-apply', {
+        ...form,
+        address: { street: form.address, city: form.city, state: form.state, zip: form.zip },
+        productInterests: interests,
+        agreeToTerms:     form.agreeToTerms,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setErrors({ form: err.message || 'Submission failed. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -135,6 +145,12 @@ const WholesaleApplicationPage = () => {
             Applications are reviewed within <strong>2 business days</strong>.
           </p>
         </div>
+
+        {errors.form && (
+          <div className="bg-red-50 border border-red-200 text-red-600 font-lato text-[13px] rounded-lg px-4 py-3 mb-6">
+            {errors.form}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} noValidate>
 

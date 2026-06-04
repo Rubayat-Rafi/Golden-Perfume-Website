@@ -80,10 +80,10 @@ const Header = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [userMenu]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setUserMenu(false);
-    logout();
     navigate('/');
+    await logout();
   };
 
   const iconClass = fixedNav
