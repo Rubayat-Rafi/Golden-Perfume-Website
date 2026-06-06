@@ -6,7 +6,7 @@ import {
   updateProduct,
   deleteProduct,
 } from '../controllers/productController.js';
-import { protect, requireRole } from '../middleware/protect.js';
+import { protect, requirePermission } from '../middleware/protect.js';
 
 const router = Router();
 
@@ -14,13 +14,9 @@ const router = Router();
 router.get('/',      getProducts);
 router.get('/:slug', getProductBySlug);
 
-// Admin only
-router.post('/',     protect, requireRole('admin'), createProduct);
-
-// Admin + Staff
-router.put('/:id',   protect, requireRole('admin', 'staff'), updateProduct);
-
-// Admin only
-router.delete('/:id', protect, requireRole('admin'), deleteProduct);
+// Admin / permitted staff
+router.post('/',      protect, requirePermission('products'), createProduct);
+router.put('/:id',    protect, requirePermission('products'), updateProduct);
+router.delete('/:id', protect, requirePermission('products'), deleteProduct);
 
 export default router;

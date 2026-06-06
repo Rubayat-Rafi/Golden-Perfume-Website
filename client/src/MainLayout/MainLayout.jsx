@@ -9,7 +9,7 @@ const MainLayout = () => {
     <>
       <ScrollToTop />
       <Header />
-      <main className="min-h-[calc(100vh-760.5px)]">
+      <main className="min-h-[calc(100vh-760.5px)] bg-cream">
         <Outlet />
       </main>
       <Footer />

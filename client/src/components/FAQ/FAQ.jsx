@@ -65,7 +65,7 @@ const FAQ = () => {
           body="Everything you need to know about our products, wholesale accounts, and shipping."
         />
 
-        <div className="max-w-3xl mx-auto mt-10 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] px-6 md:px-10 divide-y-0">
+        <div className="max-w-3xl mx-auto mt-10 bg-white/50 border border-linen rounded-2xl shadow-[0_4px_24px_rgba(20,40,25,0.06)] px-6 md:px-10 divide-y-0">
           {faqs.map((item, idx) => (
             <FAQItem
               key={idx}

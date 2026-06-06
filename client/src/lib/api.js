@@ -12,8 +12,10 @@ const BASE = '/api';
 // ─── Core fetch ────────────────────────────────────────────────────────────
 
 const request = async (path, opts = {}) => {
+  const isForm = opts.body instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
+    // For FormData, let the browser set Content-Type (with multipart boundary)
+    ...(isForm ? {} : { 'Content-Type': 'application/json' }),
     ...(_accessToken ? { Authorization: `Bearer ${_accessToken}` } : {}),
     ...opts.headers,
   };
@@ -66,6 +68,9 @@ export const api = {
   put:    (path, body) => withRefresh(path, { method: 'PUT',   body: JSON.stringify(body) }),
   patch:  (path, body) => withRefresh(path, { method: 'PATCH', body: JSON.stringify(body) }),
   del:    (path)       => withRefresh(path, { method: 'DELETE' }),
+
+  // Multipart upload (FormData) — Content-Type set automatically by the browser
+  upload: (path, formData, method = 'POST') => withRefresh(path, { method, body: formData }),
 
   // Auth routes — no refresh retry (avoids infinite loops on auth endpoints)
   auth:   (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) }),

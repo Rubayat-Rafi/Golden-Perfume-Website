@@ -6,7 +6,7 @@ export const AuthContext = createContext(null);
 const ROLE_REDIRECTS = {
   customer:  '/profile',
   wholesale: '/wholesale',
-  staff:     '/staff',
+  staff:     '/admin',
   admin:     '/admin',
 };
 
@@ -48,6 +48,27 @@ export const AuthProvider = ({ children }) => {
     return data.user;
   };
 
+  // ── refresh the current user from the server (e.g. after profile changes) ─
+  const refreshUser = useCallback(async () => {
+    try {
+      const me = await api.get('/auth/me');
+      setUser(me.user);
+      return me.user;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // ── wholesale application (auto-logs in as customer w/ pending app) ──────
+  const applyWholesale = async (payload) => {
+    const data = await api.auth('/auth/wholesale-apply', payload);
+    if (data.accessToken) {
+      setToken(data.accessToken);
+      setUser(data.user);
+    }
+    return data;
+  };
+
   // ── logout ─────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try {
@@ -64,6 +85,8 @@ export const AuthProvider = ({ children }) => {
       isLoading,
       login,
       register,
+      applyWholesale,
+      refreshUser,
       logout,
       roleRedirect: ROLE_REDIRECTS,
     }}>

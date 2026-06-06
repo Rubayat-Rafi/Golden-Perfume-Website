@@ -6,12 +6,12 @@ import { api } from '../../lib/api';
 import { normalizeProduct } from '../../lib/normalize';
 
 const SkeletonCard = () => (
-  <div className="bg-white border border-[#e8e8e8] overflow-hidden animate-pulse">
-    <div className="aspect-square bg-[#f0f0f0]" />
+  <div className="bg-cream border border-linen overflow-hidden animate-pulse rounded-sm">
+    <div className="aspect-square bg-linen/60" />
     <div className="p-3 sm:p-4">
-      <div className="h-2.5 bg-[#f0f0f0] rounded w-1/3 mb-2" />
-      <div className="h-4 bg-[#f0f0f0] rounded w-3/4 mb-3" />
-      <div className="h-4 bg-[#f0f0f0] rounded w-1/4" />
+      <div className="h-2.5 bg-linen/60 rounded w-1/3 mb-2" />
+      <div className="h-4 bg-linen/60 rounded w-3/4 mb-3" />
+      <div className="h-4 bg-linen/60 rounded w-1/4" />
     </div>
   </div>
 );
@@ -28,7 +28,7 @@ const NewArrivals = () => {
   }, []);
 
   return (
-    <section className="pt-8 md:pt-16 pb-8 md:pb-16">
+    <section className="pt-8 md:pt-16 pb-8 md:pb-16 bg-cream">
       <div className="max-w-305 mx-auto px-4 md:px-10">
         <SectionTitle
           subTitle="Fragrances"

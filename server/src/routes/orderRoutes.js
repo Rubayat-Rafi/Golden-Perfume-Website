@@ -6,16 +6,16 @@ import {
   getOrder,
   updateOrderStatus,
 } from '../controllers/orderController.js';
-import { protect, requireRole } from '../middleware/protect.js';
+import { protect, requirePermission } from '../middleware/protect.js';
 
 const router = Router();
 
 // /mine must come before /:id so Express doesn't treat "mine" as an id
 router.get('/mine',       protect,                              getMyOrders);
 router.get('/:id',        protect,                              getOrder);
-router.patch('/:id/status', protect, requireRole('admin', 'staff'), updateOrderStatus);
+router.patch('/:id/status', protect, requirePermission('orders'), updateOrderStatus);
 
 router.post('/',          protect,                              createOrder);
-router.get('/',           protect, requireRole('admin'),        getOrders);
+router.get('/',           protect, requirePermission('orders'), getOrders);
 
 export default router;

@@ -10,6 +10,19 @@ import ShopPage from "../pages/Shop/ShopPage";
 import ProductDetail from "../pages/ProductDetail/ProductDetail";
 import ProtectedRoute from "../components/Auth/ProtectedRoute";
 import ContactPage from "../pages/Contact/ContactPage";
+import ProfilePage from "../pages/Profile/ProfilePage";
+import WholesaleDashboard from "../pages/Wholesale/WholesaleDashboard";
+import AdminLayout from "../pages/Admin/AdminLayout";
+import AdminDashboard from "../pages/Admin/AdminDashboard";
+import AdminOrders from "../pages/Admin/AdminOrders";
+import AdminWholesale from "../pages/Admin/AdminWholesale";
+import AdminProducts from "../pages/Admin/AdminProducts";
+import AdminBanners from "../pages/Admin/AdminBanners";
+import AdminCustomers from "../pages/Admin/AdminCustomers";
+import AdminStaff from "../pages/Admin/AdminStaff";
+import { PermGuard } from "../pages/Admin/access";
+import AdminPromos from "../pages/Admin/AdminPromos";
+import AdminMessages from "../pages/Admin/AdminMessages";
 
 // Stub pages for protected routes — replace with real pages as you build them
 const Stub = ({ title }) => (
@@ -37,26 +50,6 @@ export const router = createBrowserRouter([
       { path: "product/:id", element: <ProductDetail /> },
       { path: "contact",    element: <ContactPage /> },
 
-      // Any authenticated user
-      {
-        path: "profile",
-        element: (
-          <ProtectedRoute>
-            <Stub title="My Profile" />
-          </ProtectedRoute>
-        ),
-      },
-
-      // Wholesale + Admin only
-      {
-        path: "wholesale",
-        element: (
-          <ProtectedRoute roles={['wholesale', 'admin']}>
-            <Stub title="Wholesale Portal" />
-          </ProtectedRoute>
-        ),
-      },
-
       // Staff + Admin only
       {
         path: "staff",
@@ -67,18 +60,47 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // Admin only
-      {
-        path: "admin",
-        element: (
-          <ProtectedRoute roles={['admin']}>
-            <Stub title="Admin Dashboard" />
-          </ProtectedRoute>
-        ),
-      },
-
       // Catch-all redirect
       { path: "*", element: <Navigate to="/" replace /> },
+    ],
+  },
+
+  // ── Account pages (standalone — no storefront header/footer) ──
+  {
+    path: "/profile",
+    element: (
+      <ProtectedRoute>
+        <ProfilePage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/wholesale",
+    element: (
+      <ProtectedRoute>
+        <WholesaleDashboard />
+      </ProtectedRoute>
+    ),
+  },
+
+  // ── Admin panel (own layout: sidebar + topbar, no storefront header/footer) ──
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute roles={['admin', 'staff']}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true,       element: <PermGuard section="dashboard"><AdminDashboard /></PermGuard> },
+      { path: "banners",   element: <PermGuard section="banners"><AdminBanners /></PermGuard> },
+      { path: "orders",    element: <PermGuard section="orders"><AdminOrders /></PermGuard> },
+      { path: "wholesale", element: <PermGuard section="wholesale"><AdminWholesale /></PermGuard> },
+      { path: "products",  element: <PermGuard section="products"><AdminProducts /></PermGuard> },
+      { path: "customers", element: <PermGuard section="customers"><AdminCustomers /></PermGuard> },
+      { path: "promos",    element: <PermGuard section="promos"><AdminPromos /></PermGuard> },
+      { path: "messages",  element: <PermGuard section="messages"><AdminMessages /></PermGuard> },
+      { path: "staff",     element: <PermGuard adminOnly><AdminStaff /></PermGuard> },
     ],
   },
 ]);

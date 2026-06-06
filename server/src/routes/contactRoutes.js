@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import { submitContact, getMessages, markRead } from '../controllers/contactController.js';
-import { protect, requireRole } from '../middleware/protect.js';
+import { protect, requirePermission } from '../middleware/protect.js';
 
 const router = Router();
 
 // Public
 router.post('/', submitContact);
 
-// Admin
-router.get('/',           protect, requireRole('admin'), getMessages);
-router.patch('/:id/read', protect, requireRole('admin'), markRead);
+// Admin / permitted staff
+router.get('/',           protect, requirePermission('messages'), getMessages);
+router.patch('/:id/read', protect, requirePermission('messages'), markRead);
 
 export default router;

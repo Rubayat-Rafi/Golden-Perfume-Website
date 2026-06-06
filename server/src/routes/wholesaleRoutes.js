@@ -5,16 +5,16 @@ import {
   reviewApplication,
   getMyApplication,
 } from '../controllers/wholesaleController.js';
-import { protect, requireRole } from '../middleware/protect.js';
+import { protect, requirePermission } from '../middleware/protect.js';
 
 const router = Router();
 
 // Authenticated user — check own application status
 router.get('/my-application', protect, getMyApplication);
 
-// Admin only
-router.get('/applications',      protect, requireRole('admin'), getApplications);
-router.get('/applications/:id',  protect, requireRole('admin'), getApplication);
-router.patch('/applications/:id', protect, requireRole('admin'), reviewApplication);
+// Admin / permitted staff
+router.get('/applications',      protect, requirePermission('wholesale'), getApplications);
+router.get('/applications/:id',  protect, requirePermission('wholesale'), getApplication);
+router.patch('/applications/:id', protect, requirePermission('wholesale'), reviewApplication);
 
 export default router;

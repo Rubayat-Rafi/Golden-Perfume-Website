@@ -1,6 +1,6 @@
 import { disableBodyScroll, enableBodyScroll } from 'body-scroll-lock';
 import { Search, User, Heart, ShoppingCart, X, ChevronDown, LogOut } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { Nav } from './Nav/Nav';
 import SearchPanel from './SearchPanel';
@@ -11,12 +11,12 @@ import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
 
 const Header = () => {
-  const { pathname } = useLocation();
-  const isHeroPage = pathname === '/';
+  // Hero is now a light, in-flow section (no transparent overlay), so the
+  // header stays solid + sticky on every page — never overlapping content.
+  const isHeroPage = false;
 
   const [promo, setPromo]           = useState(true);
-  const [scrolled, setScrolled]     = useState(false);
-  const fixedNav = !isHeroPage || scrolled;
+  const fixedNav = true;
   const [openMenu, setOpenMenu]     = useState(false);
   const [userMenu, setUserMenu]     = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -29,17 +29,6 @@ const Header = () => {
   const { itemCount } = useCart();
   const { items: wishItems } = useWishlist();
   const navigate = useNavigate();
-
-  // Transparent → opaque transition on hero page; reset scrolled when leaving
-  useEffect(() => {
-    if (!isHeroPage) return;
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      setScrolled(false);
-    };
-  }, [isHeroPage]);
 
   // Body scroll lock for mobile menu
   useEffect(() => {
@@ -98,13 +87,13 @@ const Header = () => {
     }>
       {/* Promo bar */}
       {promo && (
-        <div className="bg-brand-green px-4 py-3 text-center relative">
-          <span className="font-lato font-bold text-[13px] text-linen/90 uppercase tracking-wide">
+        <div className="bg-dark-green px-4 py-2.5 text-center relative">
+          <span className="font-lato font-bold text-[12px] md:text-[13px] text-white uppercase tracking-wide">
             FREE SHIPPING ON ORDERS OVER $50 &nbsp;|&nbsp; CALL US: +1 (504) 529-2069
           </span>
           <button
             onClick={() => setPromo(false)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-linen/90 hover:opacity-70 transition-opacity duration-200 cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:opacity-70 transition-opacity duration-200 cursor-pointer"
             aria-label="Close promo bar"
           >
             <X size={14} />
@@ -122,50 +111,36 @@ const Header = () => {
             : 'relative',
         ].join(' ')}
       >
-        {/* Brand bar */}
-        <div className="flex items-center justify-between px-4 md:px-7.5 xl:px-15 py-3 md:py-6 relative">
-          {/* Left — search (hidden on mobile) */}
-          <div className="hidden md:flex items-center">
-            <button
-              onClick={() => { setSearchOpen((o) => !o); setSearchQuery(''); }}
-              className={`cursor-pointer ${iconClass}`}
-              aria-label="Search"
-            >
-              {searchOpen ? <X size={19} /> : <Search size={19} />}
-            </button>
-          </div>
-
-          {/* Center — logo */}
-          <Link
-            to="/"
-            className="md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center"
-            aria-label="Golden Perfume"
-          >
+        {/* Brand bar — single row: logo · nav · icons */}
+        <div className="flex items-center gap-4 px-4 md:px-7.5 xl:px-15 py-3 md:py-4 relative">
+          {/* Left — logo */}
+          <Link to="/" className="flex items-center shrink-0" aria-label="Golden Perfume">
             <img
               src="/logo.png"
               alt="Golden Perfume"
-              className={`w-auto object-contain transition-all duration-300 ${
-                fixedNav
-                  ? 'h-14 md:h-16'
-                  : 'h-14 md:h-16'
-              }`}
+              className="w-auto object-contain h-12 md:h-14"
             />
           </Link>
 
+          {/* Center — desktop nav */}
+          <div className="hidden md:flex flex-1 justify-center">
+            <Nav navItem={navItem} isFixed={fixedNav} isMobile={false} />
+          </div>
+
           {/* Right — icons */}
-          <ul className="flex items-center gap-2 md:gap-7.5 ml-auto md:ml-0">
-            {/* Search — mobile only */}
-            <li className="md:hidden">
+          <ul className="flex items-center gap-3 md:gap-5 ml-auto md:ml-0 shrink-0">
+            {/* Search toggle */}
+            <li className="flex items-center">
               <button
                 onClick={() => { setSearchOpen((o) => !o); setSearchQuery(''); }}
-                className={`cursor-pointer ${iconClass}`}
+                className={`flex items-center cursor-pointer ${iconClass}`}
                 aria-label="Search"
               >
                 {searchOpen ? <X size={19} /> : <Search size={19} />}
               </button>
             </li>
             {/* User — guest shows login link; logged-in shows avatar dropdown */}
-            <li className="relative" ref={userMenuRef}>
+            <li className="relative flex items-center" ref={userMenuRef}>
               {user ? (
                 <>
                   <button
@@ -210,13 +185,13 @@ const Header = () => {
                   )}
                 </>
               ) : (
-                <Link to="/login" className={iconClass} aria-label="Log in">
+                <Link to="/login" className={`flex items-center ${iconClass}`} aria-label="Log in">
                   <User size={19} />
                 </Link>
               )}
             </li>
-            <li className="relative">
-              <Link to="/wishlist" className={`relative ${iconClass}`} aria-label="Wishlist">
+            <li className="flex items-center">
+              <Link to="/wishlist" className={`relative flex items-center ${iconClass}`} aria-label="Wishlist">
                 <Heart size={19} />
                 {wishItems.length > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center bg-gold font-lato font-bold text-[9px] text-dark-green">
@@ -225,8 +200,8 @@ const Header = () => {
                 )}
               </Link>
             </li>
-            <li>
-              <Link to="/cart" className={`relative ${iconClass}`} aria-label="Cart">
+            <li className="flex items-center">
+              <Link to="/cart" className={`relative flex items-center ${iconClass}`} aria-label="Cart">
                 <ShoppingCart size={19} />
                 {itemCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center bg-gold font-lato font-bold text-[9px] text-dark-green">
@@ -265,16 +240,6 @@ const Header = () => {
               ].join(' ')}
             />
           </button>
-        </div>
-
-        {/* Nav row — desktop */}
-        <div
-          className={[
-            'hidden md:flex justify-center px-4 md:px-7.5 xl:px-15 pb-2 md:pb-2.5',
-            fixedNav ? 'border-t border-linen' : 'border-t border-white/20',
-          ].join(' ')}
-        >
-          <Nav navItem={navItem} isFixed={fixedNav} isMobile={false} />
         </div>
 
         {/* Inline search panel */}

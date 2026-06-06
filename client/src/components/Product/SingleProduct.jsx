@@ -17,7 +17,7 @@ const SingleProduct = ({ product }) => {
   return (
     <Link
       to={`/product/${id}`}
-      className="relative group bg-white border border-[#e8e8e8] hover:border-brand-green/50 hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-300 block overflow-hidden"
+      className="relative group bg-cream border border-linen shadow-[0_2px_14px_rgba(20,40,25,0.05)] hover:border-brand-green/50 hover:shadow-[0_6px_22px_rgba(20,40,25,0.12)] transition-all duration-300 block overflow-hidden rounded-sm"
     >
       {/* Badges */}
       <div className="absolute left-0 top-0 flex flex-col z-10">
@@ -34,7 +34,7 @@ const SingleProduct = ({ product }) => {
       </div>
 
       {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-[#f8f8f8]">
+      <div className="relative aspect-square overflow-hidden bg-cream">
         <img
           src={image}
           alt={name}
@@ -43,7 +43,7 @@ const SingleProduct = ({ product }) => {
       </div>
 
       {/* Info */}
-      <div className="p-3 sm:p-4 border-t border-[#f0f0f0]">
+      <div className="p-3 sm:p-4 border-t border-linen bg-white/40">
         {category && (
           <span className="font-lato text-[9px] uppercase tracking-[2px] text-brand-green block mb-1">
             {category}
@@ -68,7 +68,7 @@ const SingleProduct = ({ product }) => {
               className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-200 cursor-pointer ${
                 wishlisted
                   ? 'bg-gold border-gold text-dark-green'
-                  : 'border-[#e0e0e0] text-dark-green/40 hover:border-brand-green hover:text-brand-green'
+                  : 'border-linen text-dark-green/40 hover:border-brand-green hover:text-brand-green'
               }`}
               aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
             >
@@ -79,8 +79,8 @@ const SingleProduct = ({ product }) => {
                 onClick={() => !inCart && addItem(product, 1)}
                 className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-200 cursor-pointer ${
                   inCart
-                    ? 'border-[#e0e0e0] text-dark-green/30 cursor-not-allowed'
-                    : 'border-[#e0e0e0] text-dark-green/40 hover:border-brand-green hover:bg-brand-green hover:text-white'
+                    ? 'border-linen text-dark-green/30 cursor-not-allowed'
+                    : 'border-linen text-dark-green/40 hover:border-brand-green hover:bg-brand-green hover:text-white'
                 }`}
                 aria-label={inCart ? 'Already in cart' : 'Add to cart'}
               >

@@ -28,3 +28,13 @@ export const requireRole = (...roles) => (req, res, next) => {
   }
   next();
 };
+
+// Admin-panel permission guard — use after protect().
+// Admins always pass; staff pass only if they hold the section permission.
+// Usage: requirePermission('orders')
+export const requirePermission = (section) => (req, res, next) => {
+  const u = req.user;
+  if (u?.role === 'admin') return next();
+  if (u?.role === 'staff' && u.permissions?.includes(section)) return next();
+  return res.status(403).json({ success: false, message: 'Access denied' });
+};

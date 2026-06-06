@@ -6,14 +6,14 @@ html {
 }
 
 @theme {
-  --color-dark-green: #2A3D31;
-  --color-forest:     #3B5249;
-  --color-gold:       #D4A853;
-  --color-cream:      #F7F3EE;
-  --color-linen:      #EDE0CC;
-  --color-mid-green:   #6B8F71;
-  --color-sage:        #B8C9BD;
-  --color-brand-green: #267B44;
+  --color-dark-green: #16361F;
+  --color-forest:     #1E5631;
+  --color-gold:       #C0974A;
+  --color-cream:      #FAF7F0;
+  --color-linen:      #EFF2EA;
+  --color-mid-green:   #5E8268;
+  --color-sage:        #AFC4B3;
+  --color-brand-green: #1E7A45;
 
   --font-playfair: "Playfair Display", serif;
   --font-lato:     "Lato", sans-serif;
@@ -35,4 +35,16 @@ html {
 @keyframes heroZoom {
   0%   { transform: scale(1)    translate(0, 0); }
   100% { transform: scale(1.12) translate(-1%, -1%); }
+}
+
+/* Mosaic-hero slide content fade-up (used by Banner carousel) */
+@keyframes heroSlideFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Slow continuous float for mosaic tiles */
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
 }

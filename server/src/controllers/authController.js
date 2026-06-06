@@ -142,6 +142,58 @@ export const me = (req, res) => {
   res.json({ success: true, user: req.user.toPublic() });
 };
 
+// ─── PATCH /api/auth/change-password ───────────────────────────────────────
+
+export const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword)
+      return res.status(400).json({ success: false, message: 'Current and new password are required' });
+    if (newPassword.length < 8)
+      return res.status(400).json({ success: false, message: 'New password must be at least 8 characters' });
+
+    const user = await User.findById(req.user._id).select('+passwordHash');
+    if (!user || !(await user.matchPassword(currentPassword)))
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+
+    user.passwordHash = newPassword;   // pre-save hook re-hashes
+    await user.save();
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── POST /api/auth/request-deletion ───────────────────────────────────────
+// User requests account deletion → pending admin review (auto-approves in 3 days)
+
+export const requestDeletion = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.deletionStatus = 'pending';
+    user.deletionRequestedAt = new Date();
+    await user.save();
+    res.json({ success: true, message: 'Account deletion requested', user: user.toPublic() });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── POST /api/auth/cancel-deletion ────────────────────────────────────────
+
+export const cancelDeletion = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.deletionStatus = 'none';
+    user.deletionRequestedAt = null;
+    await user.save();
+    res.json({ success: true, message: 'Deletion request cancelled', user: user.toPublic() });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── POST /api/auth/wholesale-apply ───────────────────────────────────────
 
 export const wholesaleApply = async (req, res, next) => {
@@ -193,11 +245,19 @@ export const wholesaleApply = async (req, res, next) => {
     });
 
     // Link application to user
-    await User.findByIdAndUpdate(user._id, { wholesaleApplicationId: application._id }, { returnDocument: 'after' });
+    user.wholesaleApplicationId = application._id;
 
+    // Auto-login: issue tokens so the applicant lands on their pending dashboard
+    const refreshToken = signRefresh(user._id);
+    user.refreshTokens.push(refreshToken);
+    await user.save();
+
+    res.cookie('refreshToken', refreshToken, COOKIE_OPTS);
     res.status(201).json({
       success: true,
       message: 'Application submitted. We will review it within 2 business days.',
+      accessToken: signAccess(user._id),
+      user: user.toPublic(),
     });
   } catch (err) {
     next(err);

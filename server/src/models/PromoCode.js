@@ -15,7 +15,7 @@ const promoCodeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-promoCodeSchema.index({ code: 1 });
+// Note: the `code` index is created automatically by `unique: true` above.
 
 // Convenience: check if code is currently usable
 promoCodeSchema.methods.isValid = function (subtotal, customerType) {

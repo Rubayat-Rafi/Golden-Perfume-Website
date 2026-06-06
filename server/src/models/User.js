@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema(
     role:     { type: String, enum: ['customer', 'wholesale', 'staff', 'admin'], default: 'customer' },
     phone:    { type: String, default: '' },
     addresses: [addressSchema],
+    // Staff route access — section keys the staff user may open (admins ignore this)
+    permissions: { type: [String], default: [] },
+    // Account deletion request workflow
+    deletionStatus:      { type: String, enum: ['none', 'pending', 'rejected'], default: 'none' },
+    deletionRequestedAt: { type: Date, default: null },
     wholesaleApplicationId: { type: mongoose.Schema.Types.ObjectId, ref: 'WholesaleApplication' },
     // stored refresh tokens — supports multiple devices; cleared on logout
     refreshTokens: { type: [String], select: false, default: [] },
@@ -46,6 +51,9 @@ userSchema.methods.toPublic = function () {
     role:      this.role,
     phone:     this.phone,
     addresses: this.addresses,
+    permissions: this.permissions,
+    deletionStatus:      this.deletionStatus,
+    deletionRequestedAt: this.deletionRequestedAt,
     wholesaleApplicationId: this.wholesaleApplicationId,
     createdAt: this.createdAt,
   };

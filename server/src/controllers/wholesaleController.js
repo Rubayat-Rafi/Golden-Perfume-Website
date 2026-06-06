@@ -51,47 +51,49 @@ export const getApplication = async (req, res, next) => {
 };
 
 // ─── PATCH /api/wholesale/applications/:id ─────────────────────────────────
-// Admin — approve or reject an application
-// Body: { action: 'approve' | 'reject', adminNote?: string }
+// Admin — set an application's state to any value (approve / reject / re-open)
+// Body: { status: 'pending' | 'approved' | 'rejected', adminNote?: string }
+// Also accepts legacy { action: 'approve' | 'reject' }.
+const VALID_STATUS = ['pending', 'approved', 'rejected'];
+
 export const reviewApplication = async (req, res, next) => {
   try {
-    const { action, adminNote = '' } = req.body;
+    let { status, action, adminNote = '' } = req.body;
 
-    if (!['approve', 'reject'].includes(action))
-      return res.status(400).json({ success: false, message: 'action must be "approve" or "reject"' });
+    // Backward-compat: map action → status
+    if (!status && action) status = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : action;
+
+    if (!VALID_STATUS.includes(status))
+      return res.status(400).json({ success: false, message: `status must be one of: ${VALID_STATUS.join(', ')}` });
 
     const application = await WholesaleApplication.findById(req.params.id).populate('userId', 'name email role');
     if (!application)
       return res.status(404).json({ success: false, message: 'Application not found' });
 
-    if (application.status !== 'pending')
-      return res.status(409).json({
-        success: false,
-        message: `Application has already been ${application.status}`,
-      });
-
-    const newStatus = action === 'approve' ? 'approved' : 'rejected';
-
     // Update the application
-    application.status     = newStatus;
+    application.status     = status;
     application.adminNote  = adminNote;
     application.reviewedBy = req.user._id;
     application.reviewedAt = new Date();
     await application.save();
 
-    // If approved → upgrade the user's role to wholesale
-    if (action === 'approve') {
-      await User.findByIdAndUpdate(application.userId._id, { role: 'wholesale' });
+    // Sync the applicant's role with the decision.
+    // Never touch staff/admin accounts — only flip between customer ⇄ wholesale.
+    const applicant = application.userId;
+    if (applicant && (applicant.role === 'customer' || applicant.role === 'wholesale')) {
+      const targetRole = status === 'approved' ? 'wholesale' : 'customer';
+      if (applicant.role !== targetRole) {
+        await User.findByIdAndUpdate(applicant._id, { role: targetRole });
+      }
     }
 
-    // Re-fetch with population for the response
     const updated = await WholesaleApplication.findById(req.params.id)
       .populate('userId',     'name email role')
       .populate('reviewedBy', 'name email');
 
     res.json({
       success: true,
-      message: `Application ${newStatus}`,
+      message: `Application set to ${status}`,
       data:    updated,
     });
   } catch (err) {
