@@ -145,7 +145,9 @@ const WholesaleDashboard = () => {
             </Link>
             <div className="flex items-center gap-5">
               <Link to="/profile" className="font-lato text-[13px] text-white/70 hover:text-gold transition-colors">Account Settings</Link>
-              <Link to="/"><img src="/logo.png" alt="Golden Perfume" className="h-9 w-auto" /></Link>
+              <Link to="/" className="inline-flex items-center">
+                <img src="/logo.png" alt="Golden Perfume" className="h-10 w-auto" style={{ filter: 'brightness(0) invert(1)' }} />
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-4 flex-wrap">
@@ -202,7 +204,7 @@ const WholesaleDashboard = () => {
               <div className="bg-white border border-[#ececec] rounded-xl p-10 text-center">
                 <ShoppingBag size={28} className="text-[#ccc] mx-auto mb-3" />
                 <p className="font-lato text-[14px] text-[#999] mb-5">No wholesale orders yet.</p>
-                <Link to="/shop" className="inline-block h-11 leading-[44px] px-8 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">Place Your First Order</Link>
+                <Link to="/shop" className="inline-block h-11 leading-11 px-8 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">Place Your First Order</Link>
               </div>
             ) : (
               <div className="flex flex-col gap-3">

@@ -250,7 +250,9 @@ const ProfilePage = () => {
             <Link to="/" className="inline-flex items-center gap-2 font-lato text-[13px] text-white/70 hover:text-gold transition-colors">
               <ArrowLeft size={16} /> Back to Home
             </Link>
-            <Link to="/"><img src="/logo.png" alt="Golden Perfume" className="h-9 w-auto" /></Link>
+            <Link to="/" className="inline-flex items-center">
+              <img src="/logo.png" alt="Golden Perfume" className="h-10 w-auto" style={{ filter: 'brightness(0) invert(1)' }} />
+            </Link>
           </div>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gold flex items-center justify-center font-playfair font-bold text-[24px] text-dark-green shrink-0">
