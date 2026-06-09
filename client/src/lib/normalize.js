@@ -47,9 +47,10 @@ export const normalizeProduct = (p) => ({
 
 // Map API category → what TopCategories / ShopPage sidebar expect
 export const normalizeCategory = (c) => ({
-  id:    c._id,
-  slug:  c.slug,
-  name:  c.name,
-  image: c.image || '',    // TopCategories now uses cat.image
-  order: c.order || 0,
+  id:     c._id,
+  slug:   c.slug,
+  name:   c.name,
+  parent: c.parent || '',
+  image:  c.image || '',   // TopCategories now uses cat.image
+  order:  c.order || 0,
 });

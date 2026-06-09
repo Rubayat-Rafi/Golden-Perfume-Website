@@ -1,4 +1,5 @@
 import Product from '../models/Product.js';
+import { getDescendantSlugs } from './categoryController.js';
 
 // Strip wholesalePrice from every variant when user is not wholesale/admin
 const isWholesaleUser = (req) =>
@@ -23,7 +24,11 @@ export const getProducts = async (req, res, next) => {
 
     const filter = { isActive: true };
 
-    if (category) filter.categorySlug = category;
+    // A category filter includes that category AND all its sub-categories
+    if (category) {
+      const slugs = await getDescendantSlugs(category);
+      filter.categorySlug = slugs.length > 1 ? { $in: slugs } : category;
+    }
     if (sale     === '1') filter.isSale     = true;
     if (isNew    === '1') filter.isNew      = true;
     if (featured === '1') filter.isFeatured = true;

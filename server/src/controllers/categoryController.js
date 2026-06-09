@@ -1,5 +1,22 @@
 import Category from '../models/Category.js';
 
+// Resolve a category slug + all of its descendant slugs (any depth).
+// Used by the product filter so selecting a parent shows everything beneath it.
+export const getDescendantSlugs = async (slug) => {
+  const all = await Category.find({ isActive: true }).select('slug parent');
+  const childrenOf = {};
+  all.forEach((c) => {
+    (childrenOf[c.parent || ''] ||= []).push(c.slug);
+  });
+  const result = [slug];
+  const stack = [slug];
+  while (stack.length) {
+    const cur = stack.pop();
+    (childrenOf[cur] || []).forEach((child) => { result.push(child); stack.push(child); });
+  }
+  return result;
+};
+
 // ─── GET /api/categories ───────────────────────────────────────────────────
 // Public — returns all active categories sorted by order
 export const getCategories = async (req, res, next) => {
@@ -35,7 +52,7 @@ export const getCategoryBySlug = async (req, res, next) => {
 // Admin only — create a new category
 export const createCategory = async (req, res, next) => {
   try {
-    const { name, slug, image, order } = req.body;
+    const { name, slug, image, order, parent } = req.body;
 
     if (!name || !slug)
       return res.status(400).json({ success: false, message: 'Name and slug are required' });
@@ -44,7 +61,13 @@ export const createCategory = async (req, res, next) => {
     if (exists)
       return res.status(409).json({ success: false, message: 'Slug already exists' });
 
-    const category = await Category.create({ name, slug, image: image || '', order: order ?? 0 });
+    const category = await Category.create({
+      name,
+      slug,
+      parent: parent || '',
+      image: image || '',
+      order: order ?? 0,
+    });
     res.status(201).json({ success: true, data: category });
   } catch (err) {
     next(err);
@@ -55,7 +78,7 @@ export const createCategory = async (req, res, next) => {
 // Admin only — update a category
 export const updateCategory = async (req, res, next) => {
   try {
-    const { name, slug, image, order, isActive } = req.body;
+    const { name, slug, image, order, isActive, parent } = req.body;
 
     // Prevent slug collision with another document
     if (slug) {
@@ -64,13 +87,27 @@ export const updateCategory = async (req, res, next) => {
         return res.status(409).json({ success: false, message: 'Slug already in use by another category' });
     }
 
+    const current = await Category.findById(req.params.id);
+    if (!current) return res.status(404).json({ success: false, message: 'Category not found' });
+
+    // Prevent a category from becoming its own parent or a descendant's child (cycle)
+    if (parent !== undefined && parent) {
+      if (parent === (slug || current.slug))
+        return res.status(400).json({ success: false, message: 'A category cannot be its own parent' });
+      const descendants = await getDescendantSlugs(current.slug);
+      if (descendants.includes(parent))
+        return res.status(400).json({ success: false, message: 'Cannot move a category under one of its own sub-categories' });
+    }
+
+    const update = { name, slug, image, order, isActive };
+    if (parent !== undefined) update.parent = parent;
+
     const category = await Category.findByIdAndUpdate(
       req.params.id,
-      { name, slug, image, order, isActive },
+      update,
       { returnDocument: 'after', runValidators: true }
     );
 
-    if (!category) return res.status(404).json({ success: false, message: 'Category not found' });
     res.json({ success: true, data: category });
   } catch (err) {
     next(err);

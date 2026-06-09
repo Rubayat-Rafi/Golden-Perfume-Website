@@ -217,7 +217,7 @@ export const deleteUser = async (req, res, next) => {
 };
 
 // Sections a staff member can be granted access to (must match the admin nav)
-export const STAFF_SECTIONS = ['dashboard', 'banners', 'orders', 'wholesale', 'products', 'customers', 'promos', 'messages'];
+export const STAFF_SECTIONS = ['dashboard', 'banners', 'orders', 'wholesale', 'products', 'categories', 'customers', 'promos', 'messages'];
 
 const cleanPermissions = (perms) =>
   Array.isArray(perms) ? perms.filter((p) => STAFF_SECTIONS.includes(p)) : [];

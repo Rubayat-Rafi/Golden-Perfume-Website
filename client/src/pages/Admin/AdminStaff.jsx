@@ -11,6 +11,7 @@ export const SECTIONS = [
   { key: 'orders',    label: 'Orders' },
   { key: 'wholesale', label: 'Wholesale' },
   { key: 'products',  label: 'Products' },
+  { key: 'categories', label: 'Categories' },
   { key: 'customers', label: 'Customers' },
   { key: 'promos',    label: 'Promo Codes' },
   { key: 'messages',  label: 'Messages' },

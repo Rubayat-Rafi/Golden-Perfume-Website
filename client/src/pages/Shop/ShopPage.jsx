@@ -1,9 +1,46 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SlidersHorizontal, X, ChevronDown, Search, Package } from 'lucide-react';
+import { SlidersHorizontal, X, ChevronDown, ChevronRight, Search, Package } from 'lucide-react';
 import SingleProduct from '../../components/Product/SingleProduct';
 import { api } from '../../lib/api';
 import { normalizeProduct, normalizeCategory } from '../../lib/normalize';
+
+// Collapsible category tree (any depth)
+const CategoryTree = ({ categories, parent = '', depth = 0, active, onSelect, open, toggleOpen }) => {
+  const nodes = categories
+    .filter((c) => (c.parent || '') === parent)
+    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+  if (!nodes.length) return null;
+
+  return (
+    <div className={depth > 0 ? 'ml-3 border-l border-linen pl-2' : ''}>
+      {nodes.map((cat) => {
+        const hasKids = categories.some((c) => c.parent === cat.slug);
+        const isActive = active === cat.slug;
+        const isOpen = open.has(cat.slug);
+        return (
+          <div key={cat.slug}>
+            <div className="flex items-center">
+              {hasKids ? (
+                <button onClick={() => toggleOpen(cat.slug)} className="w-5 h-6 flex items-center justify-center text-[#aaa] hover:text-dark-green cursor-pointer shrink-0">
+                  {isOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                </button>
+              ) : <span className="w-5 shrink-0" />}
+              <button onClick={() => onSelect(cat.slug)}
+                className={`flex-1 text-left py-1.5 font-lato text-[13px] transition-colors duration-150 cursor-pointer truncate ${isActive ? 'text-brand-green font-bold' : 'text-[#666] hover:text-dark-green'}`}>
+                {cat.name}
+              </button>
+            </div>
+            {hasKids && isOpen && (
+              <CategoryTree categories={categories} parent={cat.slug} depth={depth + 1}
+                active={active} onSelect={onSelect} open={open} toggleOpen={toggleOpen} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const SORT_OPTIONS = [
   { label: 'Name A–Z',           value: 'name-asc'   },
@@ -51,8 +88,9 @@ const CheckboxRow = ({ label, checked, onChange }) => (
 
 // ─── Sidebar content ──────────────────────────────────────────────────────
 
-const SidebarContent = ({ params, setParam, clearParam, categories, searchInput, setSearchInput }) => {
+const SidebarContent = ({ params, setParam, clearParam, categories, searchInput, setSearchInput, openCats, toggleCat }) => {
   const category = params.get('category') || '';
+  const gender   = params.get('gender') || '';
   const inStock  = params.get('inStock') === '1';
   const sale     = params.get('sale') === '1';
   const isNew    = params.get('new') === '1';
@@ -70,25 +108,36 @@ const SidebarContent = ({ params, setParam, clearParam, categories, searchInput,
         <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#aaa]" />
       </div>
 
+      {/* Shop For (gender) */}
+      <SidebarHeading>Shop For</SidebarHeading>
+      <div className="flex gap-2 mb-2">
+        {[{ label: 'All', value: '' }, { label: 'Men', value: 'men' }, { label: 'Women', value: 'women' }].map((g) => {
+          const active = gender === g.value;
+          return (
+            <button key={g.label}
+              onClick={() => g.value ? setParam('gender', g.value) : clearParam('gender')}
+              className={`flex-1 h-9 rounded-lg font-lato text-[12px] transition-colors cursor-pointer ${active ? 'bg-dark-green text-linen font-bold' : 'bg-white border border-[#ddd] text-[#666] hover:border-dark-green'}`}>
+              {g.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Categories */}
       <SidebarHeading>Categories</SidebarHeading>
       <button
         onClick={() => clearParam('category')}
-        className={`w-full flex items-center justify-between py-1.5 font-lato text-[13px] transition-colors duration-150 cursor-pointer mb-1 ${!category ? 'text-gold font-bold' : 'text-[#666] hover:text-[#222]'}`}
+        className={`w-full flex items-center py-1.5 pl-5 font-lato text-[13px] transition-colors duration-150 cursor-pointer mb-1 ${!category ? 'text-brand-green font-bold' : 'text-[#666] hover:text-dark-green'}`}
       >
-        <span>All Products</span>
+        All Products
       </button>
-      {categories.map((cat) => {
-        const active = category === cat.slug;
-        return (
-          <button key={cat.slug}
-            onClick={() => setParam('category', cat.slug)}
-            className={`w-full flex items-center justify-between py-1.5 font-lato text-[13px] transition-colors duration-150 cursor-pointer mb-1 ${active ? 'text-gold font-bold' : 'text-[#666] hover:text-[#222]'}`}
-          >
-            <span>{cat.name}</span>
-          </button>
-        );
-      })}
+      <CategoryTree
+        categories={categories}
+        active={category}
+        onSelect={(slug) => setParam('category', slug)}
+        open={openCats}
+        toggleOpen={toggleCat}
+      />
 
       {/* Availability */}
       <SidebarHeading>Availability</SidebarHeading>
@@ -113,9 +162,17 @@ const ShopPage = () => {
   const [sortOpen,      setSortOpen]      = useState(false);
   const [searchInput,   setSearchInput]   = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [openCats,      setOpenCats]      = useState(new Set());
+
+  const toggleCat = (slug) => setOpenCats((prev) => {
+    const next = new Set(prev);
+    next.has(slug) ? next.delete(slug) : next.add(slug);
+    return next;
+  });
 
   // Read active filter state from URL
   const category = params.get('category') || '';
+  const gender   = params.get('gender')   || '';
   const sort     = params.get('sort')     || 'name-asc';
   const inStock  = params.get('inStock') === '1';
   const sale     = params.get('sale')    === '1';
@@ -165,6 +222,7 @@ const ShopPage = () => {
     setIsLoading(true);
     const q = new URLSearchParams();
     if (category)        q.set('category', category);
+    if (gender)          q.set('gender', gender);
     if (inStock)         q.set('inStock', '1');
     if (sale)            q.set('sale', '1');
     if (isNew)           q.set('isNew', '1');   // API uses isNew, URL uses new
@@ -181,14 +239,16 @@ const ShopPage = () => {
       })
       .catch(() => setProducts([]))
       .finally(() => setIsLoading(false));
-  }, [category, inStock, sale, isNew, debouncedSearch, sort, page]);
+  }, [category, gender, inStock, sale, isNew, debouncedSearch, sort, page]);
 
   // Active filter chips for display
   const catName   = categories.find((c) => c.slug === category)?.name ?? category;
+  const genderLabel = gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : '';
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label ?? 'Sort';
-  const activeCount = [category, inStock, sale, isNew, debouncedSearch].filter(Boolean).length;
+  const activeCount = [category, gender, inStock, sale, isNew, debouncedSearch].filter(Boolean).length;
 
   const chips = [
+    gender          && { label: genderLabel,      remove: () => clearParam('gender')   },
     category        && { label: catName,         remove: () => clearParam('category') },
     inStock         && { label: 'In Stock',       remove: () => clearParam('inStock')  },
     sale            && { label: 'On Sale',         remove: () => clearParam('sale')     },
@@ -211,6 +271,7 @@ const ShopPage = () => {
           <SidebarContent
             params={params} setParam={setParam} clearParam={clearParam}
             categories={categories} searchInput={searchInput} setSearchInput={setSearchInput}
+            openCats={openCats} toggleCat={toggleCat}
           />
         </aside>
 
@@ -343,6 +404,7 @@ const ShopPage = () => {
               <SidebarContent
                 params={params} setParam={setParam} clearParam={clearParam}
                 categories={categories} searchInput={searchInput} setSearchInput={setSearchInput}
+                openCats={openCats} toggleCat={toggleCat}
               />
             </div>
             <div className="px-6 py-4 border-t border-[#f0f0f0]">

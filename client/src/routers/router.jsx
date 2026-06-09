@@ -18,6 +18,7 @@ import AdminOrders from "../pages/Admin/AdminOrders";
 import AdminWholesale from "../pages/Admin/AdminWholesale";
 import AdminProducts from "../pages/Admin/AdminProducts";
 import AdminBanners from "../pages/Admin/AdminBanners";
+import AdminCategories from "../pages/Admin/AdminCategories";
 import AdminCustomers from "../pages/Admin/AdminCustomers";
 import AdminStaff from "../pages/Admin/AdminStaff";
 import { PermGuard } from "../pages/Admin/access";
@@ -97,6 +98,7 @@ export const router = createBrowserRouter([
       { path: "orders",    element: <PermGuard section="orders"><AdminOrders /></PermGuard> },
       { path: "wholesale", element: <PermGuard section="wholesale"><AdminWholesale /></PermGuard> },
       { path: "products",  element: <PermGuard section="products"><AdminProducts /></PermGuard> },
+      { path: "categories", element: <PermGuard section="categories"><AdminCategories /></PermGuard> },
       { path: "customers", element: <PermGuard section="customers"><AdminCustomers /></PermGuard> },
       { path: "promos",    element: <PermGuard section="promos"><AdminPromos /></PermGuard> },
       { path: "messages",  element: <PermGuard section="messages"><AdminMessages /></PermGuard> },

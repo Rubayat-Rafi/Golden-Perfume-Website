@@ -61,7 +61,9 @@ const TopCategories = () => {
 
   useEffect(() => {
     api.get('/categories')
-      .then((d) => setCategories((d.data || []).map(normalizeCategory)))
+      .then((d) => setCategories(
+        (d.data || []).map(normalizeCategory).filter((c) => !c.parent)  // top-level only
+      ))
       .catch(() => {});
   }, []);
 

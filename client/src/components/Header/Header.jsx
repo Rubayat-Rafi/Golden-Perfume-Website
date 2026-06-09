@@ -1,14 +1,30 @@
 import { disableBodyScroll, enableBodyScroll } from 'body-scroll-lock';
 import { Search, User, Heart, ShoppingCart, X, ChevronDown, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Nav } from './Nav/Nav';
 import SearchPanel from './SearchPanel';
 import { navItem } from '../../data/data.header';
+import { api } from '../../lib/api';
 import useWindowSize from '../../hooks/useWindowSize';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
+
+// Build the Shop mega-menu columns from the live category tree (all levels)
+const buildShopColumns = (cats) => {
+  const byParent = {};
+  cats.forEach((c) => { (byParent[c.parent || ''] ||= []).push(c); });
+  Object.values(byParent).forEach((arr) => arr.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)));
+  const sub = (slug) => (byParent[slug] || []).map((c) => ({
+    name: c.name, path: `/shop?category=${c.slug}`, children: sub(c.slug),
+  }));
+  return (byParent[''] || []).map((top) => ({
+    title: top.name,
+    path: `/shop?category=${top.slug}`,
+    items: sub(top.slug),
+  }));
+};
 
 const Header = () => {
   // Hero is now a light, in-flow section (no transparent overlay), so the
@@ -29,6 +45,31 @@ const Header = () => {
   const { itemCount } = useCart();
   const { items: wishItems } = useWishlist();
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+
+  // Load the category tree for the Shop mega-menu
+  useEffect(() => {
+    api.get('/categories')
+      .then((d) => setCategories(d.data || []))
+      .catch(() => setCategories([]));
+  }, []);
+
+  // Inject the live category tree into the Shop item's mega-menu
+  const navItems = useMemo(() => {
+    if (!categories.length) return navItem;
+    const cols = buildShopColumns(categories);
+    if (!cols.length) return navItem;
+    const genders = [
+      { label: 'Men',   value: 'men' },
+      { label: 'Women', value: 'women' },
+      { label: 'All Items', value: '' },
+    ];
+    return navItem.map((item) =>
+      item.name === 'Shop' && item.megaNav
+        ? { ...item, megaNav: { ...item.megaNav, columns: cols, genders } }
+        : item
+    );
+  }, [categories]);
 
   // Body scroll lock for mobile menu
   useEffect(() => {
@@ -124,7 +165,7 @@ const Header = () => {
 
           {/* Center — desktop nav */}
           <div className="hidden md:flex flex-1 justify-center">
-            <Nav navItem={navItem} isFixed={fixedNav} isMobile={false} />
+            <Nav navItem={navItems} isFixed={fixedNav} isMobile={false} />
           </div>
 
           {/* Right — icons */}
@@ -268,7 +309,7 @@ const Header = () => {
 
           {/* Scrollable nav */}
           <div className="flex-1 overflow-y-auto">
-            <Nav navItem={navItem} isFixed={true} isMobile={true} onClose={() => setOpenMenu(false)} />
+            <Nav navItem={navItems} isFixed={true} isMobile={true} onClose={() => setOpenMenu(false)} />
           </div>
 
           {/* Sidebar footer */}

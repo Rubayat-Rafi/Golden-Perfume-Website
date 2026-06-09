@@ -4,6 +4,8 @@ const categorySchema = new mongoose.Schema(
   {
     name:     { type: String, required: true, trim: true },
     slug:     { type: String, required: true, unique: true, lowercase: true, trim: true },
+    // Parent category slug ('' = top-level). Enables Category → Sub → Sub-Sub trees.
+    parent:   { type: String, default: '', index: true },
     image:    { type: String, default: '' },
     order:    { type: Number, default: 0 },     // controls display sort order
     isActive: { type: Boolean, default: true },  // soft-delete / hide

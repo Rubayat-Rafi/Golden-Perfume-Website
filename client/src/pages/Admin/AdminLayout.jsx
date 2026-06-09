@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, ShoppingBag, Briefcase, Package, Users,
+  LayoutDashboard, ShoppingBag, Briefcase, Package, Users, FolderTree,
   Ticket, Mail, LogOut, Menu, X, ExternalLink, Image as ImageIcon, ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -14,6 +14,7 @@ const NAV = [
   { to: '/admin/orders',    label: 'Orders',       icon: ShoppingBag, perm: 'orders' },
   { to: '/admin/wholesale', label: 'Wholesale',    icon: Briefcase,  perm: 'wholesale' },
   { to: '/admin/products',  label: 'Products',     icon: Package,    perm: 'products' },
+  { to: '/admin/categories', label: 'Categories',  icon: FolderTree, perm: 'categories' },
   { to: '/admin/customers', label: 'Customers',    icon: Users,      perm: 'customers' },
   { to: '/admin/promos',    label: 'Promo Codes',  icon: Ticket,     perm: 'promos' },
   { to: '/admin/messages',  label: 'Messages',     icon: Mail,       perm: 'messages' },

@@ -12,7 +12,7 @@ export const canAccess = (user, section) => {
 };
 
 // First section a user is allowed to land on (for redirects)
-const ORDER = ['dashboard', 'banners', 'orders', 'wholesale', 'products', 'customers', 'promos', 'messages'];
+const ORDER = ['dashboard', 'banners', 'orders', 'wholesale', 'products', 'categories', 'customers', 'promos', 'messages'];
 export const firstAllowed = (user) => {
   if (user?.role === 'admin') return '/admin';
   const s = ORDER.find((sec) => canAccess(user, sec));
