@@ -5,10 +5,14 @@ import { sweepExpiredDeletions } from './src/controllers/adminController.js';
 
 const PORT = process.env.PORT || 5000;
 
+// ✅ Single connectDB call
 connectDB().then(() => {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  }
 
-  // Auto-approve account deletions older than 3 days — run now + hourly
   sweepExpiredDeletions();
   setInterval(sweepExpiredDeletions, 60 * 60 * 1000);
 });
+
+export default app;
