@@ -7,7 +7,10 @@ export const setToken  = (t) => { _accessToken = t; };
 export const clearToken = ()  => { _accessToken = null; };
 export const getToken  = ()   => _accessToken;
 
-const BASE = '/api';
+// ✅ Works in both local (via proxy) and production (direct URL)
+const BASE = import.meta.env.VITE_BACKEND_URL
+  ? `${import.meta.env.VITE_BACKEND_URL}/api`
+  : '/api';
 
 // ─── Core fetch ────────────────────────────────────────────────────────────
 
