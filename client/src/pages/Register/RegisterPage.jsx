@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 
 const RegisterPage = () => {
@@ -16,7 +17,6 @@ const RegisterPage = () => {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [errors, setErrors]               = useState({});
   const [submitting, setSubmitting]       = useState(false);
-  const [success, setSuccess]             = useState(false);
 
   if (!isLoading && user) return <Navigate to="/" replace />;
 
@@ -47,40 +47,14 @@ const RegisterPage = () => {
         password: form.password,
         phone:    form.phone.trim(),
       });
-      setSuccess(true);
+      toast.success('Account created! Please sign in.');
+      navigate('/login');
     } catch (err) {
       setErrors({ form: err.message || 'Registration failed. Please try again.' });
     } finally {
       setSubmitting(false);
     }
   };
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center px-5 py-16">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] px-8 py-14 text-center">
-          <Link to="/" className="inline-block mb-8">
-            <img src="/logo.png" alt="Golden Perfume" className="h-16 w-auto mx-auto" />
-          </Link>
-          <div className="w-16 h-16 rounded-full bg-brand-green/10 flex items-center justify-center mx-auto mb-6">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path d="M5 14L11 20L23 8" stroke="#267B44" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <h2 className="font-playfair text-[28px] text-dark-green mb-3">Account Created!</h2>
-          <p className="font-lato text-[14px] text-[#999] mb-8">
-            Welcome to Golden Perfume. You can now sign in to your account.
-          </p>
-          <Link
-            to="/login"
-            className="inline-flex items-center justify-center h-12 px-12 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300"
-          >
-            Sign In
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const inputCls = 'w-full h-12 px-4 border border-[#e0e0e0] rounded-lg font-lato text-[14px] text-dark-green placeholder:text-[#bbb] outline-none focus:border-brand-green/60 focus:ring-2 focus:ring-brand-green/10 transition-all duration-200';
   const labelCls = 'block font-lato text-[11px] uppercase tracking-[1.5px] text-[#888] mb-2';

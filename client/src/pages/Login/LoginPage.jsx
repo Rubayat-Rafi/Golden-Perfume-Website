@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 
 const LoginPage = () => {
@@ -24,6 +25,7 @@ const LoginPage = () => {
     setSubmitting(true);
     try {
       const loggedIn = await login(email, password);
+      toast.success(`Welcome back, ${loggedIn.name.split(' ')[0]}!`);
       navigate(roleRedirect[loggedIn.role] ?? '/', { replace: true });
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');

@@ -1,6 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ShoppingBag, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '../../lib/api';
+import { useOrders } from '../../hooks/queries';
 import { money, formatDateTime, StatusBadge, ChannelBadge, PageHeader, Card, Spinner, EmptyState } from './adminUI';
 
 const FULFILLMENT = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -26,12 +28,12 @@ const OrderDrawer = ({ order, onClose, onUpdated }) => {
   const save = async () => {
     setSaving(true);
     try {
-      const d = await api.patch(`/orders/${order._id}/status`, {
+      await api.patch(`/orders/${order._id}/status`, {
         fulfillmentStatus: fulfillment,
         paymentStatus: payment,
         trackingNumber: tracking,
       });
-      onUpdated(d.data);
+      onUpdated();
       onClose();
     } catch (err) {
       alert(err.message || 'Update failed');
@@ -134,31 +136,18 @@ const OrderDrawer = ({ order, onClose, onUpdated }) => {
 };
 
 const AdminOrders = () => {
-  const [orders, setOrders]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter]   = useState('');
-  const [page, setPage]       = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal]     = useState(0);
+  const queryClient = useQueryClient();
+  const [filter,   setFilter]   = useState('');
+  const [page,     setPage]     = useState(1);
   const [selected, setSelected] = useState(null);
 
-  const load = useCallback(() => {
-    setLoading(true);
-    const q = new URLSearchParams();
-    if (filter) q.set('fulfillmentStatus', filter);
-    q.set('page', String(page));
-    q.set('limit', '15');
-    api.get(`/orders?${q}`)
-      .then((d) => { setOrders(d.data || []); setTotalPages(d.totalPages || 1); setTotal(d.total || 0); })
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false));
-  }, [filter, page]);
+  const queryParams = { page: String(page), limit: '15', ...(filter ? { fulfillmentStatus: filter } : {}) };
+  const { data, isLoading: loading } = useOrders(queryParams);
+  const orders     = data?.data       || [];
+  const totalPages = data?.totalPages || 1;
+  const total      = data?.total      || 0;
 
-  useEffect(() => { load(); }, [load]);
-
-  const handleUpdated = (updated) => {
-    setOrders((prev) => prev.map((o) => (o._id === updated._id ? { ...o, ...updated } : o)));
-  };
+  const handleUpdated = () => queryClient.invalidateQueries({ queryKey: ['orders'] });
 
   return (
     <div>

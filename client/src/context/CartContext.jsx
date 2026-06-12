@@ -5,8 +5,12 @@ export const CartContext = createContext(null);
 const STORAGE_KEY = 'gp_cart';
 
 export const CartProvider = ({ children }) => {
-  const [items, setItems] = useState([]);
-  const [hydrated, setHydrated] = useState(false);
+  const [items,       setItems]       = useState([]);
+  const [hydrated,    setHydrated]    = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const openSidebar  = () => setSidebarOpen(true);
+  const closeSidebar = () => setSidebarOpen(false);
 
   useEffect(() => {
     try {
@@ -32,6 +36,7 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, { ...product, quantity }];
     });
+    setSidebarOpen(true);
   };
 
   const removeItem = (id) => setItems((prev) => prev.filter((i) => i.id !== id));
@@ -51,7 +56,11 @@ export const CartProvider = ({ children }) => {
   );
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, itemCount, total }}>
+    <CartContext.Provider value={{
+      items, addItem, removeItem, updateQuantity, clearCart,
+      itemCount, total,
+      sidebarOpen, openSidebar, closeSidebar,
+    }}>
       {children}
     </CartContext.Provider>
   );

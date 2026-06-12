@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag, Tag } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import { useAuth } from '../../hooks/useAuth';
+import { api } from '../../lib/api';
 
 const QuantityStepper = ({ quantity, onDecrement, onIncrement }) => (
   <div className="flex items-center border border-[#ddd] rounded-lg overflow-hidden">
@@ -96,15 +97,32 @@ const CartRow = ({ item, onRemove, onDecrement, onIncrement, showRange }) => {
 const CartPage = () => {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart();
   const { role } = useAuth();
+  const navigate = useNavigate();
   const showRange = role === 'wholesale' || role === 'admin';
 
-  const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoCode,    setPromoCode]    = useState('');
+  const [appliedCode,  setAppliedCode]  = useState('');
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [promoMsg,     setPromoMsg]     = useState('');
+  const [promoErr,     setPromoErr]     = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
 
-  const handleApplyPromo = (e) => {
+  const handleApplyPromo = async (e) => {
     e.preventDefault();
-    // Placeholder — wire up real promo validation with backend
-    setPromoApplied(!!promoCode.trim());
+    if (!promoCode.trim()) return;
+    setPromoErr(''); setPromoMsg(''); setPromoLoading(true);
+    try {
+      const d = await api.post('/promo/validate', { code: promoCode.trim(), subtotal: total });
+      setPromoDiscount(d.discount);
+      setAppliedCode(d.code);
+      setPromoMsg(d.message);
+    } catch (err) {
+      setPromoDiscount(0);
+      setAppliedCode('');
+      setPromoErr(err.message || 'Invalid promo code');
+    } finally {
+      setPromoLoading(false);
+    }
   };
 
   if (items.length === 0) {
@@ -183,21 +201,23 @@ const CartPage = () => {
             <input
               type="text"
               value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value)}
+              onChange={(e) => { setPromoCode(e.target.value); setPromoErr(''); setPromoMsg(''); }}
               placeholder="Enter promo code"
               className="flex-1 h-12 px-4 border border-[#ddd] rounded-lg font-lato text-[14px] text-[#222] placeholder:text-[#bbb] outline-none focus:border-gold transition-colors duration-200"
             />
             <button
               type="submit"
-              className="h-12 px-6 bg-dark-green text-linen font-lato font-bold text-sm uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors duration-300 cursor-pointer"
+              disabled={promoLoading}
+              className="h-12 px-6 bg-dark-green text-linen font-lato font-bold text-sm uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors duration-300 cursor-pointer disabled:opacity-60"
             >
-              Apply
+              {promoLoading ? '…' : 'Apply'}
             </button>
           </form>
-          {promoApplied && (
-            <p className="font-lato text-[13px] text-green-600 mt-3">
-              Promo code applied! (Backend integration needed for discount)
-            </p>
+          {promoMsg && (
+            <p className="font-lato text-[13px] text-green-600 mt-3">{promoMsg}</p>
+          )}
+          {promoErr && (
+            <p className="font-lato text-[13px] text-red-500 mt-3">{promoErr}</p>
           )}
         </div>
 
@@ -210,10 +230,12 @@ const CartPage = () => {
               <span>Subtotal</span>
               <span className="text-[#222]">${total.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between font-lato text-[14px] text-[#666]">
-              <span>Promo discount</span>
-              <span>{promoApplied ? '–$0.00' : 'None'}</span>
-            </div>
+            {promoDiscount > 0 && (
+              <div className="flex justify-between font-lato text-[14px] text-green-600">
+                <span>Promo ({appliedCode})</span>
+                <span>–${promoDiscount.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between font-lato text-[14px] text-[#666]">
               <span>Shipping</span>
               <span className="text-green-600 font-bold">
@@ -224,15 +246,17 @@ const CartPage = () => {
 
           <div className="flex justify-between items-center border-t border-[#f0f0f0] pt-4 mb-6">
             <span className="font-playfair text-[18px] text-[#222]">Total</span>
-            <span className="font-playfair font-bold text-[24px] text-gold">${total.toFixed(2)}</span>
+            <span className="font-playfair font-bold text-[24px] text-gold">
+              ${Math.max(0, total - promoDiscount).toFixed(2)}
+            </span>
           </div>
 
-          <Link
-            to="/checkout"
-            className="block w-full text-center h-13 leading-13 bg-gold text-dark-green font-lato font-bold text-sm uppercase tracking-[2px] rounded-lg hover:bg-[#c49843] transition-colors duration-300"
+          <button
+            onClick={() => navigate('/checkout', { state: { promoCode: appliedCode, discount: promoDiscount } })}
+            className="block w-full text-center h-13 leading-13 bg-gold text-dark-green font-lato font-bold text-sm uppercase tracking-[2px] rounded-lg hover:bg-[#c49843] transition-colors duration-300 cursor-pointer"
           >
             Proceed to Checkout
-          </Link>
+          </button>
 
           <Link
             to="/shop"

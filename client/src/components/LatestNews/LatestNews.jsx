@@ -7,7 +7,7 @@ const LatestNews = () => {
   const blogs = blogData.slice(0, 2);
 
   return (
-    <section className="pt-8 md:pt-16 pb-6 md:pb-10">
+    <section className="pt-5 md:pt-8 pb-5 md:pb-8">
       <div className="max-w-305 mx-auto px-4 md:px-10">
         <SectionTitle
           subTitle="Our Blog"

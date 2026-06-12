@@ -1,23 +1,22 @@
 import { useState } from 'react';
 import SectionTitle from '../shared/SectionTitle/SectionTitle';
 import ProductsCarousel from '../Product/ProductsCarousel';
-import products from '../../data/product/product.json';
+import { useProducts } from '../../hooks/queries';
+import { normalizeProduct } from '../../lib/normalize';
 
 const filterList = [
-  { name: 'Fragrance Oils', value: 'fragrance' },
+  { name: 'Fragrance Oils', value: 'fragrance-body-oils' },
   { name: 'Incense',        value: 'incense' },
-  { name: 'Essential Oil',  value: 'essential' },
+  { name: 'Essential Oil',  value: 'essential-oil' },
   { name: 'Soap',           value: 'soap' },
-  { name: 'Skin Care',      value: 'skincare' },
-  { name: 'Herbs & Smudges', value: 'herbs' },
+  { name: 'Skin Care',      value: 'skin-care' },
 ];
 
 const Trending = () => {
-  const [activeFilter, setActiveFilter] = useState('fragrance');
+  const [activeFilter, setActiveFilter] = useState('fragrance-body-oils');
 
-  const displayed = products.filter((p) =>
-    Array.isArray(p.filterItems) && p.filterItems.includes(activeFilter)
-  );
+  const { data, isLoading } = useProducts({ category: activeFilter, limit: '12' });
+  const displayed = (data?.data || []).map(normalizeProduct);
 
   return (
     <section className="overflow-x-hidden pt-8 md:pt-16 pb-8 md:pb-16">
@@ -49,7 +48,21 @@ const Trending = () => {
 
         {/* Carousel */}
         <div className="-mx-5.5">
-          <ProductsCarousel products={displayed} />
+          {isLoading ? (
+            <div className="flex gap-4 px-5.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="shrink-0 w-56 bg-white border border-[#efefef] animate-pulse">
+                  <div className="aspect-square bg-linen/60" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-2.5 bg-linen/60 rounded w-1/3" />
+                    <div className="h-4 bg-linen/60 rounded w-3/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <ProductsCarousel products={displayed} />
+          )}
         </div>
       </div>
     </section>

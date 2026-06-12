@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
+import { api } from '../../lib/api';
 
 const inputCls = 'w-full h-12 px-4 bg-white border border-[#e0e0e0] rounded-lg font-lato text-[14px] text-dark-green placeholder:text-dark-green/30 outline-none focus:border-brand-green/60 focus:ring-2 focus:ring-brand-green/10 transition-all duration-200';
 const labelCls = 'block font-lato text-[11px] uppercase tracking-[1.5px] text-dark-green/60 mb-2';
@@ -51,9 +52,14 @@ const ContactPage = () => {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setSubmitting(false);
-    setSent(true);
+    try {
+      await api.post('/contact', form);
+      setSent(true);
+    } catch (err) {
+      setErrors({ message: err.message || 'Failed to send. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -158,6 +164,10 @@ const ContactPage = () => {
                     />
                     {errors.message && <p className="font-lato text-[12px] text-red-500 mt-1">{errors.message}</p>}
                   </div>
+
+                  {errors.message && (
+                    <p className="font-lato text-[12px] text-red-500 mb-4">{errors.message}</p>
+                  )}
 
                   <button
                     type="submit"

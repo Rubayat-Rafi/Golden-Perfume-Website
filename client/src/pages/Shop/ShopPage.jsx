@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X, ChevronDown, ChevronRight, Search, Package } from 'lucide-react';
 import SingleProduct from '../../components/Product/SingleProduct';
-import { api } from '../../lib/api';
+import { useCategories, useProducts } from '../../hooks/queries';
 import { normalizeProduct, normalizeCategory } from '../../lib/normalize';
 
 // Collapsible category tree (any depth)
@@ -153,11 +153,6 @@ const SidebarContent = ({ params, setParam, clearParam, categories, searchInput,
 const ShopPage = () => {
   const [params, setSearchParams] = useSearchParams();
 
-  const [categories,    setCategories]    = useState([]);
-  const [products,      setProducts]      = useState([]);
-  const [total,         setTotal]         = useState(0);
-  const [totalPages,    setTotalPages]    = useState(1);
-  const [isLoading,     setIsLoading]     = useState(true);
   const [filterOpen,    setFilterOpen]    = useState(false);
   const [sortOpen,      setSortOpen]      = useState(false);
   const [searchInput,   setSearchInput]   = useState('');
@@ -197,13 +192,6 @@ const ShopPage = () => {
     setSearchParams(new URLSearchParams());
   };
 
-  // Fetch categories once
-  useEffect(() => {
-    api.get('/categories')
-      .then((d) => setCategories((d.data || []).map(normalizeCategory)))
-      .catch(() => {});
-  }, []);
-
   // Debounce search input
   useEffect(() => {
     const t = setTimeout(() => {
@@ -217,29 +205,23 @@ const ShopPage = () => {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  // Fetch products whenever filters/sort/page/search change
-  useEffect(() => {
-    setIsLoading(true);
-    const q = new URLSearchParams();
-    if (category)        q.set('category', category);
-    if (gender)          q.set('gender', gender);
-    if (inStock)         q.set('inStock', '1');
-    if (sale)            q.set('sale', '1');
-    if (isNew)           q.set('isNew', '1');   // API uses isNew, URL uses new
-    if (debouncedSearch) q.set('search', debouncedSearch);
-    q.set('sort',  sort);
-    q.set('page',  String(page));
-    q.set('limit', String(LIMIT));
-
-    api.get(`/products?${q}`)
-      .then((d) => {
-        setProducts((d.data || []).map(normalizeProduct));
-        setTotal(d.total || 0);
-        setTotalPages(d.totalPages || 1);
-      })
-      .catch(() => setProducts([]))
-      .finally(() => setIsLoading(false));
-  }, [category, gender, inStock, sale, isNew, debouncedSearch, sort, page]);
+  const queryParams = {
+    sort,
+    page: String(page),
+    limit: String(LIMIT),
+    ...(category ? { category } : {}),
+    ...(gender ? { gender } : {}),
+    ...(inStock ? { inStock: '1' } : {}),
+    ...(sale ? { sale: '1' } : {}),
+    ...(isNew ? { isNew: '1' } : {}),
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
+  };
+  const { data: rawCategories = [] } = useCategories();
+  const categories = rawCategories.map(normalizeCategory);
+  const { data: productsData, isLoading } = useProducts(queryParams);
+  const products   = (productsData?.data || []).map(normalizeProduct);
+  const total      = productsData?.total      || 0;
+  const totalPages = productsData?.totalPages || 1;
 
   // Active filter chips for display
   const catName   = categories.find((c) => c.slug === category)?.name ?? category;

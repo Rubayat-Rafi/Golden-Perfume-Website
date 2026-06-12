@@ -1,26 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
 import { Search, X, Package } from 'lucide-react';
 import SingleProduct from '../../components/Product/SingleProduct';
-import allProducts from '../../data/product/product.json';
+import { useProducts } from '../../hooks/queries';
+import { normalizeProduct } from '../../lib/normalize';
+
+const useDebounce = (value, delay = 400) => {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+};
 
 const SearchPage = () => {
   const [query, setQuery] = useState('');
   const inputRef = useRef(null);
+  const debouncedQuery = useDebounce(query.trim());
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  const q = query.trim().toLowerCase();
-
-  const results = q
-    ? allProducts.filter((p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category?.toLowerCase().includes(q) ||
-        p.description?.toLowerCase().includes(q) ||
-        p.content?.toLowerCase().includes(q)
-      )
-    : [];
+  const { data, isLoading } = useProducts(
+    debouncedQuery ? { search: debouncedQuery, limit: '20' } : null
+  );
+  const results = (data?.data || []).map(normalizeProduct);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -60,18 +65,29 @@ const SearchPage = () => {
 
       {/* Results */}
       <div className="max-w-305 mx-auto px-4 md:px-10 py-10 md:py-14">
-        {!q ? (
-          /* Initial state */
+        {!debouncedQuery ? (
           <div className="text-center py-16">
             <Search size={40} className="text-dark-green/15 mx-auto mb-4" />
             <p className="font-playfair text-[20px] text-dark-green/40">
               Start typing to search products
             </p>
           </div>
+        ) : isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white border border-[#efefef] animate-pulse">
+                <div className="aspect-square bg-linen/60" />
+                <div className="p-4 space-y-2">
+                  <div className="h-2.5 bg-linen/60 rounded w-1/3" />
+                  <div className="h-4 bg-linen/60 rounded w-3/4" />
+                  <div className="h-4 bg-linen/60 rounded w-1/4" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : results.length === 0 ? (
-          /* No results */
           <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-full bg-linen flex items-center justify-center mx-auto mb-5">
+            <div className="w-16 h-16 bg-linen flex items-center justify-center mx-auto mb-5">
               <Package size={26} className="text-dark-green/30" />
             </div>
             <h3 className="font-playfair text-[22px] text-dark-green mb-2">
@@ -88,7 +104,6 @@ const SearchPage = () => {
             </button>
           </div>
         ) : (
-          /* Results grid */
           <>
             <p className="font-lato text-[13px] text-dark-green/50 mb-6">
               Showing <strong className="text-dark-green">{results.length}</strong> result{results.length !== 1 ? 's' : ''} for &ldquo;<span className="text-brand-green">{query}</span>&rdquo;

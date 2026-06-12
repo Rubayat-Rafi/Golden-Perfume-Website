@@ -1,7 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Briefcase, X, Eye, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
+import { useWholesaleApplications } from '../../hooks/queries';
 import { formatDate, StatusBadge, PageHeader, Card, Spinner, EmptyState } from './adminUI';
 
 const STATUSES = ['pending', 'approved', 'rejected'];
@@ -27,7 +29,6 @@ const Detail = ({ label, value }) => value ? (
   </div>
 ) : null;
 
-// Detail drawer (opened from the "View" link) — shows full application + note field
 const AppDrawer = ({ app, onClose, onChange, busyId }) => {
   const [note, setNote] = useState(app.adminNote || '');
   const a = app;
@@ -101,22 +102,12 @@ const AppDrawer = ({ app, onClose, onChange, busyId }) => {
 const AdminWholesale = () => {
   const { role } = useAuth();
   const isAdmin = role === 'admin';
-  const [allApps, setAllApps] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter]   = useState('pending');
+  const queryClient = useQueryClient();
+  const [filter, setFilter]     = useState('pending');
   const [selected, setSelected] = useState(null);
-  const [busyId, setBusyId]   = useState(null);
 
-  // Fetch every application ONCE — applications are low-volume, so we filter
-  // client-side for instant tab switching (no per-tab API round-trip).
-  useEffect(() => {
-    api.get('/wholesale/applications')
-      .then((d) => setAllApps(d.data || []))
-      .catch(() => setAllApps([]))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: allApps = [], isLoading: loading } = useWholesaleApplications();
 
-  // Derived counts + filtered list — recomputed in memory, never refetched
   const counts = useMemo(() => {
     const c = { '': allApps.length, pending: 0, approved: 0, rejected: 0 };
     allApps.forEach((a) => { c[a.status] = (c[a.status] || 0) + 1; });
@@ -128,37 +119,37 @@ const AdminWholesale = () => {
     [allApps, filter]
   );
 
-  // Change status inline (dropdown) or from the drawer — updates state in place
-  const changeStatus = async (id, status, adminNote) => {
-    setBusyId(id);
-    try {
-      const d = await api.patch(`/wholesale/applications/${id}`, { status, adminNote });
-      const updated = d.data;
-      setAllApps((prev) => prev.map((a) => (a._id === id ? updated : a)));
-      setSelected((cur) => (cur && cur._id === id ? updated : cur));
-    } catch (err) {
-      alert(err.message || 'Update failed');
-    } finally {
-      setBusyId(null);
-    }
-  };
+  const changeStatusMutation = useMutation({
+    mutationFn: ({ id, status, adminNote }) =>
+      api.patch(`/wholesale/applications/${id}`, { status, adminNote }).then((r) => r.data),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['wholesale', 'applications'] });
+      setSelected((cur) => (cur && cur._id === updated._id ? updated : cur));
+    },
+    onError: (e) => alert(e.message || 'Update failed'),
+  });
 
-  // Delete the wholesale account entirely (user + application)
-  const removeAccount = async (app) => {
+  const removeAccountMutation = useMutation({
+    mutationFn: ({ uid, appId }) => api.del(`/admin/users/${uid}`).then(() => appId),
+    onSuccess: (appId) => {
+      queryClient.invalidateQueries({ queryKey: ['wholesale', 'applications'] });
+      setSelected((cur) => (cur && cur._id === appId ? null : cur));
+    },
+    onError: (e) => alert(e.message || 'Delete failed'),
+  });
+
+  const changeStatus = (id, status, adminNote) => changeStatusMutation.mutate({ id, status, adminNote });
+
+  const removeAccount = (app) => {
     const uid = app.userId?._id || app.userId;
     if (!uid) { alert('No linked user account to delete'); return; }
     if (!confirm(`Delete the wholesale account for "${app.businessName}"? This removes the user and their application permanently.`)) return;
-    setBusyId(app._id);
-    try {
-      await api.del(`/admin/users/${uid}`);
-      setAllApps((prev) => prev.filter((a) => a._id !== app._id));
-      setSelected((cur) => (cur && cur._id === app._id ? null : cur));
-    } catch (err) {
-      alert(err.message || 'Delete failed');
-    } finally {
-      setBusyId(null);
-    }
+    removeAccountMutation.mutate({ uid, appId: app._id });
   };
+
+  const busyId = (changeStatusMutation.isPending && changeStatusMutation.variables?.id)
+    || (removeAccountMutation.isPending && removeAccountMutation.variables?.appId)
+    || null;
 
   return (
     <div>

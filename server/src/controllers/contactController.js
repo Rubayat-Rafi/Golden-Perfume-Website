@@ -63,3 +63,15 @@ export const markRead = async (req, res, next) => {
     next(err);
   }
 };
+
+// ─── DELETE /api/contact/:id ───────────────────────────────────────────────
+// Admin — permanently delete a message
+export const deleteMessage = async (req, res, next) => {
+  try {
+    const msg = await ContactMessage.findByIdAndDelete(req.params.id);
+    if (!msg) return res.status(404).json({ success: false, message: 'Message not found' });
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+};

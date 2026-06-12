@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   DollarSign, ShoppingBag, Briefcase, Package, Users, Mail, TrendingUp,
 } from 'lucide-react';
-import { api } from '../../lib/api';
+import { useAdminStats } from '../../hooks/queries';
 import { money, formatDate, StatusBadge, ChannelBadge, PageHeader, Card, Spinner } from './adminUI';
 
 const KpiCard = ({ icon: Icon, label, value, accent, to }) => {
@@ -22,15 +21,7 @@ const KpiCard = ({ icon: Icon, label, value, accent, to }) => {
 };
 
 const AdminDashboard = () => {
-  const [data, setData]       = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get('/admin/stats')
-      .then((d) => setData(d.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, isLoading: loading } = useAdminStats();
 
   if (loading) return <Spinner />;
   if (!data) return <p className="font-lato text-[#999]">Failed to load dashboard.</p>;

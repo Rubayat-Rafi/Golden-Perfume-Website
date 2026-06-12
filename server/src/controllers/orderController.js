@@ -1,6 +1,47 @@
 import Order, { generateOrderNumber } from '../models/Order.js';
 import Product from '../models/Product.js';
 
+// ─── GET /api/orders/track?orderNumber=GP-xxx ──────────────────────────────
+// Public — no auth required. Returns safe tracking info for a given order.
+export const trackOrder = async (req, res, next) => {
+  try {
+    const { orderNumber } = req.query;
+    if (!orderNumber)
+      return res.status(400).json({ success: false, message: 'Order number is required' });
+
+    const order = await Order.findOne({ orderNumber: orderNumber.trim().toUpperCase() })
+      .populate('items.product', 'name image slug');
+
+    if (!order)
+      return res.status(404).json({ success: false, message: 'Order not found. Please check the order number and try again.' });
+
+    res.json({
+      success: true,
+      data: {
+        orderNumber:       order.orderNumber,
+        fulfillmentStatus: order.fulfillmentStatus,
+        paymentStatus:     order.paymentStatus,
+        trackingNumber:    order.trackingNumber || '',
+        createdAt:         order.createdAt,
+        shippingAddress:   order.shippingAddress,
+        subtotal:          order.subtotal,
+        discount:          order.discount,
+        shippingCost:      order.shippingCost,
+        grandTotal:        order.grandTotal,
+        items: order.items.map((i) => ({
+          name:        i.product?.name    || 'Product',
+          image:       i.product?.image   || '',
+          slug:        i.product?.slug    || '',
+          variantSize: i.variantSize,
+          qty:         i.qty,
+        })),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const isPrivileged = (role) => role === 'wholesale' || role === 'admin';
 
 const round2 = (n) => Math.round(n * 100) / 100;

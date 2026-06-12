@@ -5,12 +5,14 @@ import {
   getMyOrders,
   getOrder,
   updateOrderStatus,
+  trackOrder,
 } from '../controllers/orderController.js';
 import { protect, requirePermission } from '../middleware/protect.js';
 
 const router = Router();
 
-// /mine must come before /:id so Express doesn't treat "mine" as an id
+// /track and /mine must come before /:id so Express doesn't treat them as an id
+router.get('/track',      trackOrder);
 router.get('/mine',       protect,                              getMyOrders);
 router.get('/:id',        protect,                              getOrder);
 router.patch('/:id/status', protect, requirePermission('orders'), updateOrderStatus);

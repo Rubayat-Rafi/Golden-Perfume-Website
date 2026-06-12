@@ -8,7 +8,8 @@ const categorySchema = new mongoose.Schema(
     parent:   { type: String, default: '', index: true },
     image:    { type: String, default: '' },
     order:    { type: Number, default: 0 },     // controls display sort order
-    isActive: { type: Boolean, default: true },  // soft-delete / hide
+    isActive: { type: Boolean, default: true },
+    gender:   { type: [String], enum: ['male', 'female', 'all'], default: [] },
   },
   { timestamps: true }
 );

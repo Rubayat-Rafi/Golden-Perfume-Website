@@ -52,7 +52,7 @@ export const getCategoryBySlug = async (req, res, next) => {
 // Admin only — create a new category
 export const createCategory = async (req, res, next) => {
   try {
-    const { name, slug, image, order, parent } = req.body;
+    const { name, slug, parent } = req.body;
 
     if (!name || !slug)
       return res.status(400).json({ success: false, message: 'Name and slug are required' });
@@ -61,12 +61,20 @@ export const createCategory = async (req, res, next) => {
     if (exists)
       return res.status(409).json({ success: false, message: 'Slug already exists' });
 
+    const image = req.file
+      ? `/uploads/categories/${req.file.filename}`
+      : (req.body.image || '');
+
+    let gender = [];
+    try { gender = req.body.gender ? JSON.parse(req.body.gender) : []; } catch { gender = []; }
+
     const category = await Category.create({
       name,
       slug,
       parent: parent || '',
-      image: image || '',
-      order: order ?? 0,
+      image,
+      order: Number(req.body.order) || 0,
+      gender,
     });
     res.status(201).json({ success: true, data: category });
   } catch (err) {
@@ -78,7 +86,7 @@ export const createCategory = async (req, res, next) => {
 // Admin only — update a category
 export const updateCategory = async (req, res, next) => {
   try {
-    const { name, slug, image, order, isActive, parent } = req.body;
+    const { name, slug, parent } = req.body;
 
     // Prevent slug collision with another document
     if (slug) {
@@ -99,7 +107,20 @@ export const updateCategory = async (req, res, next) => {
         return res.status(400).json({ success: false, message: 'Cannot move a category under one of its own sub-categories' });
     }
 
-    const update = { name, slug, image, order, isActive };
+    const image = req.file
+      ? `/uploads/categories/${req.file.filename}`
+      : (req.body.image !== undefined ? req.body.image : current.image);
+
+    const isActive = req.body.isActive !== undefined
+      ? req.body.isActive !== 'false' && req.body.isActive !== false
+      : current.isActive;
+
+    let gender = current.gender;
+    if (req.body.gender !== undefined) {
+      try { gender = JSON.parse(req.body.gender); } catch { gender = []; }
+    }
+
+    const update = { name, slug, image, order: Number(req.body.order) || 0, isActive, gender };
     if (parent !== undefined) update.parent = parent;
 
     const category = await Category.findByIdAndUpdate(

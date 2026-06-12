@@ -1,23 +1,24 @@
 import Banner from "../../components/Banner/Banner";
+import FeatureStrip from "../../components/FeatureStrip/FeatureStrip";
 import TopCategories from "../../components/TopCategories/TopCategories";
+import ShopByGender from "../../components/ShopByGender/ShopByGender";
 import FeaturedProducts from "../../components/FeaturedProducts/FeaturedProducts";
+import BrandStory from "../../components/BrandStory/BrandStory";
 import NewArrivals from "../../components/NewArrivals/NewArrivals";
-import Discount from "../../components/Discount/Discount";
 import PromoBanner from "../../components/PromoBanner/PromoBanner";
-import BrandLogo from "../../components/BrandLogo/BrandLogo";
-import Trending from "../../components/Trending/Trending";
-import Advantage from "../../components/Advantage/Advantage";
-import Info from "../../components/Info/Info";
+import Testimonials from "../../components/Testimonials/Testimonials";
 import LatestNews from "../../components/LatestNews/LatestNews";
-import Subscribe from "../../components/Subscribe/Subscribe";
 import FAQ from "../../components/FAQ/FAQ";
+import Subscribe from "../../components/Subscribe/Subscribe";
 
 const Home = () => {
   return (
     <>
       <Banner />
+      <FeatureStrip />
       <TopCategories />
       <FeaturedProducts />
+      <ShopByGender />
 
       {/* Promo banner image */}
       <div className="w-full">
@@ -28,13 +29,10 @@ const Home = () => {
         />
       </div>
 
+      <BrandStory />
       <NewArrivals />
-      {/* <Discount /> */}
       <PromoBanner />
-      {/* <BrandLogo /> */}
-      {/* <Trending /> */}
-      {/* <Advantage /> */}
-      {/* <Info /> */}
+      <Testimonials />
       <FAQ />
       <LatestNews />
       <Subscribe />

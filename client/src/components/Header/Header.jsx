@@ -1,12 +1,13 @@
 import { disableBodyScroll, enableBodyScroll } from 'body-scroll-lock';
 import { Search, User, Heart, ShoppingCart, X, ChevronDown, LogOut } from 'lucide-react';
+import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Nav } from './Nav/Nav';
 import SearchPanel from './SearchPanel';
 import { navItem } from '../../data/data.header';
-import { api } from '../../lib/api';
 import useWindowSize from '../../hooks/useWindowSize';
+import { useCategories } from '../../hooks/queries';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
@@ -22,6 +23,7 @@ const buildShopColumns = (cats) => {
   return (byParent[''] || []).map((top) => ({
     title: top.name,
     path: `/shop?category=${top.slug}`,
+    image: top.image || '',
     items: sub(top.slug),
   }));
 };
@@ -42,31 +44,19 @@ const Header = () => {
   const userMenuRef = useRef(null);
   const headerRef   = useRef(null);
   const { user, role, logout, roleRedirect } = useAuth();
-  const { itemCount } = useCart();
+  const { itemCount, openSidebar } = useCart();
   const { items: wishItems } = useWishlist();
   const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);
-
-  // Load the category tree for the Shop mega-menu
-  useEffect(() => {
-    api.get('/categories')
-      .then((d) => setCategories(d.data || []))
-      .catch(() => setCategories([]));
-  }, []);
+  const { data: categories = [] } = useCategories();
 
   // Inject the live category tree into the Shop item's mega-menu
   const navItems = useMemo(() => {
     if (!categories.length) return navItem;
     const cols = buildShopColumns(categories);
     if (!cols.length) return navItem;
-    const genders = [
-      { label: 'Men',   value: 'men' },
-      { label: 'Women', value: 'women' },
-      { label: 'All Items', value: '' },
-    ];
     return navItem.map((item) =>
       item.name === 'Shop' && item.megaNav
-        ? { ...item, megaNav: { ...item.megaNav, columns: cols, genders } }
+        ? { ...item, megaNav: { ...item.megaNav, columns: cols } }
         : item
     );
   }, [categories]);
@@ -113,6 +103,7 @@ const Header = () => {
   const handleLogout = async () => {
     setUserMenu(false);
     navigate('/');
+    toast('Signed out successfully.');
     await logout();
   };
 
@@ -124,7 +115,7 @@ const Header = () => {
     <header className={
       isHeroPage
         ? 'absolute left-0 top-0 w-full z-101'
-        : 'sticky top-0 z-101 bg-cream/97 shadow-[0_2px_12px_rgba(0,0,0,0.08)]'
+        : 'sticky top-0 z-101 bg-white/97 shadow-[0_2px_12px_rgba(0,0,0,0.08)]'
     }>
       {/* Promo bar */}
       {promo && (
@@ -242,14 +233,14 @@ const Header = () => {
               </Link>
             </li>
             <li className="flex items-center">
-              <Link to="/cart" className={`relative flex items-center ${iconClass}`} aria-label="Cart">
+              <button onClick={openSidebar} className={`relative flex items-center cursor-pointer ${iconClass}`} aria-label="Cart">
                 <ShoppingCart size={19} />
                 {itemCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center bg-gold font-lato font-bold text-[9px] text-dark-green">
                     {itemCount > 9 ? '9+' : itemCount}
                   </span>
                 )}
-              </Link>
+              </button>
             </li>
           </ul>
 
@@ -296,15 +287,22 @@ const Header = () => {
         <div
           ref={menuRef}
           className={[
-            'md:hidden fixed top-0 right-0 h-full w-75 bg-white z-101 flex flex-col transition-transform duration-300 ease-in-out shadow-[-4px_0_24px_rgba(0,0,0,0.12)]',
+            'md:hidden fixed top-0 right-0 h-full w-75 bg-white z-200 flex flex-col transition-transform duration-300 ease-in-out shadow-[-4px_0_24px_rgba(0,0,0,0.12)]',
             openMenu ? 'translate-x-0' : 'translate-x-full',
           ].join(' ')}
         >
           {/* Sidebar header */}
-          <div className="flex items-center px-5 py-4 border-b border-[#f0f0f0] shrink-0">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[#f0f0f0] shrink-0">
             <Link to="/" onClick={() => setOpenMenu(false)} aria-label="Home">
               <img src="/logo.png" alt="Golden Perfume" className="h-11 w-auto" />
             </Link>
+            <button
+              onClick={() => setOpenMenu(false)}
+              className="w-8 h-8 flex items-center justify-center text-forest/50 hover:text-dark-green transition-colors cursor-pointer"
+              aria-label="Close menu"
+            >
+              <X size={20} />
+            </button>
           </div>
 
           {/* Scrollable nav */}
@@ -327,7 +325,7 @@ const Header = () => {
         {/* Mobile overlay */}
         {openMenu && (
           <div
-            className="md:hidden fixed inset-0 bg-black/30 z-100"
+            className="md:hidden fixed inset-0 bg-black/30 z-199"
             onClick={() => setOpenMenu(false)}
           />
         )}

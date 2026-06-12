@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   LayoutGrid, ShoppingBag, Truck, User, Lock, Settings as SettingsIcon,
   Heart, LogOut, Briefcase, ArrowLeft, AlertTriangle, Eye, EyeOff,
   Package, CheckCircle2, XCircle, Clock,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../hooks/useAuth';
 import { useWishlist } from '../../hooks/useWishlist';
 import { api } from '../../lib/api';
+import { useMyOrders, useMyWholesaleApplication } from '../../hooks/queries';
 import OrderCard, { money, fmtDate, StatusBadge } from '../../components/OrderCard/OrderCard';
 
 const TABS = [
@@ -219,25 +221,17 @@ const ProfilePage = () => {
   const { items: wishItems } = useWishlist();
   const navigate = useNavigate();
 
-  const [tab, setTab]       = useState('overview');
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [hasApplication, setHasApplication] = useState(false);
+  const [tab, setTab] = useState('overview');
 
-  useEffect(() => {
-    api.get('/orders/mine?limit=50')
-      .then((d) => setOrders(d.data || []))
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: orders = [], isLoading: loading } = useMyOrders();
+  const { data: myApplication } = useMyWholesaleApplication(role === 'customer');
+  const hasApplication = !!myApplication;
 
-  useEffect(() => {
-    if (role === 'customer') {
-      api.get('/wholesale/my-application').then(() => setHasApplication(true)).catch(() => setHasApplication(false));
-    }
-  }, [role]);
-
-  const handleLogout = async () => { navigate('/'); await logout(); };
+  const handleLogout = async () => {
+    navigate('/');
+    toast('Signed out successfully.');
+    await logout();
+  };
   const recentOrder = orders[0];
   const activeOrders = orders.filter((o) => o.fulfillmentStatus !== 'delivered' && o.fulfillmentStatus !== 'cancelled');
 

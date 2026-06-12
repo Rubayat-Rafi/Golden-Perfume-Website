@@ -105,13 +105,19 @@ export const getProductBySlug = async (req, res, next) => {
 
 // ─── POST /api/products ────────────────────────────────────────────────────
 // Admin only — create product
+const parseBool  = (v, fallback = false) => v === undefined ? fallback : v !== 'false' && v !== false;
+const parseJSON  = (v, fallback = [])    => { try { return v ? JSON.parse(v) : fallback; } catch { return fallback; } };
+
+const resolveFiles = (req) => {
+  // uploadProduct uses .fields() so files are in req.files, not req.file
+  const mainFile     = req.files?.image?.[0];
+  const galleryFiles = req.files?.imageGallery || [];
+  return { mainFile, galleryFiles };
+};
+
 export const createProduct = async (req, res, next) => {
   try {
-    const {
-      productNumber, name, slug, categorySlug, categoryName,
-      gender, description, content, image, imageGallery,
-      isSale, isNew, isFeatured, isStocked, tags, variants,
-    } = req.body;
+    const { productNumber, name, slug, categorySlug, categoryName, gender, description, content } = req.body;
 
     if (!productNumber || !name || !slug || !categorySlug || !categoryName)
       return res.status(400).json({ success: false, message: 'productNumber, name, slug, categorySlug and categoryName are required' });
@@ -120,19 +126,22 @@ export const createProduct = async (req, res, next) => {
     if (exists)
       return res.status(409).json({ success: false, message: 'Product with this slug or product number already exists' });
 
+    const { mainFile, galleryFiles } = resolveFiles(req);
+    const image        = mainFile ? `/uploads/products/${mainFile.filename}` : (req.body.image || '');
+    const imageGallery = galleryFiles.map((f) => `/uploads/products/${f.filename}`);
+
     const product = await Product.create({
       productNumber, name, slug, categorySlug, categoryName,
-      gender: gender || '',
-      description: description || '',
-      content: content || '',
-      image: image || '',
-      imageGallery: imageGallery || [],
-      isSale: isSale || false,
-      isNew: isNew || false,
-      isFeatured: isFeatured || false,
-      isStocked: isStocked !== false,
-      tags: tags || [],
-      variants: variants || [],
+      gender:       gender || '',
+      description:  description || '',
+      content:      content || '',
+      image,
+      imageGallery,
+      isFeatured:  parseBool(req.body.isFeatured, false),
+      isNew:       parseBool(req.body.isNew, false),
+      isSale:      parseBool(req.body.isSale, false),
+      isStocked:   parseBool(req.body.isStocked, true),
+      variants:    parseJSON(req.body.variants),
     });
 
     res.status(201).json({ success: true, data: product });
@@ -145,7 +154,6 @@ export const createProduct = async (req, res, next) => {
 // Admin + Staff — update product
 export const updateProduct = async (req, res, next) => {
   try {
-    // Prevent slug/productNumber collision
     const { slug, productNumber } = req.body;
     if (slug || productNumber) {
       const conflict = await Product.findOne({
@@ -159,14 +167,43 @@ export const updateProduct = async (req, res, next) => {
         return res.status(409).json({ success: false, message: 'Slug or product number already in use' });
     }
 
+    const current = await Product.findById(req.params.id);
+    if (!current) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    const { mainFile, galleryFiles } = resolveFiles(req);
+    const image = mainFile
+      ? `/uploads/products/${mainFile.filename}`
+      : (req.body.image !== undefined ? req.body.image : current.image);
+
+    // Gallery: kept existing URLs + newly uploaded files
+    const existingGallery = parseJSON(req.body.existingGallery, current.imageGallery || []);
+    const newGalleryUrls  = galleryFiles.map((f) => `/uploads/products/${f.filename}`);
+    const imageGallery    = [...existingGallery, ...newGalleryUrls];
+
+    const update = {
+      productNumber: req.body.productNumber ?? current.productNumber,
+      name:          req.body.name          ?? current.name,
+      slug:          req.body.slug          ?? current.slug,
+      categorySlug:  req.body.categorySlug  ?? current.categorySlug,
+      categoryName:  req.body.categoryName  ?? current.categoryName,
+      gender:        req.body.gender        ?? current.gender,
+      description:   req.body.description   ?? current.description,
+      content:       req.body.content       ?? current.content,
+      image,
+      imageGallery,
+      isFeatured:    req.body.isFeatured  !== undefined ? parseBool(req.body.isFeatured)        : current.isFeatured,
+      isNew:         req.body.isNew       !== undefined ? parseBool(req.body.isNew)             : current.isNew,
+      isSale:        req.body.isSale      !== undefined ? parseBool(req.body.isSale)            : current.isSale,
+      isStocked:     req.body.isStocked   !== undefined ? parseBool(req.body.isStocked, true)   : current.isStocked,
+      isActive:      req.body.isActive    !== undefined ? parseBool(req.body.isActive, true)    : current.isActive,
+      variants:      req.body.variants    !== undefined ? parseJSON(req.body.variants)          : current.variants,
+    };
+
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { ...req.body },
+      update,
       { returnDocument: 'after', runValidators: true }
     );
-
-    if (!product)
-      return res.status(404).json({ success: false, message: 'Product not found' });
 
     res.json({ success: true, data: product });
   } catch (err) {

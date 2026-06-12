@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ticket, X, Plus } from 'lucide-react';
 import { api } from '../../lib/api';
+import { usePromos } from '../../hooks/queries';
 import { money, formatDate, PageHeader, Card, Spinner, EmptyState } from './adminUI';
 
 const inputCls = 'w-full h-10 px-3 border border-[#ddd] rounded-lg font-lato text-[13px] outline-none focus:border-brand-green';
@@ -17,15 +19,14 @@ const CreateModal = ({ onClose, onCreated }) => {
   const submit = async () => {
     setErr(''); setBusy(true);
     try {
-      const d = await api.post('/promo', {
+      await api.post('/promo', {
         ...form,
         value: Number(form.value),
         minOrderAmount: Number(form.minOrderAmount || 0),
         usageLimit: Number(form.usageLimit || 0),
         expiresAt: form.expiresAt || null,
       });
-      onCreated(d.data);
-      onClose();
+      onCreated();
     } catch (e) {
       setErr(e.message || 'Failed to create');
     } finally {
@@ -97,25 +98,17 @@ const CreateModal = ({ onClose, onCreated }) => {
 };
 
 const AdminPromos = () => {
-  const [promos, setPromos]   = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const invalidate  = () => queryClient.invalidateQueries({ queryKey: ['promos'] });
+
+  const { data: promos = [], isLoading: loading } = usePromos();
   const [showCreate, setShowCreate] = useState(false);
 
-  const load = () => {
-    setLoading(true);
-    api.get('/promo')
-      .then((d) => setPromos(d.data || []))
-      .catch(() => setPromos([]))
-      .finally(() => setLoading(false));
-  };
-  useEffect(() => { load(); }, []);
-
-  const toggleActive = async (promo) => {
-    try {
-      const d = await api.put(`/promo/${promo._id}`, { isActive: !promo.isActive });
-      setPromos((prev) => prev.map((p) => (p._id === d.data._id ? d.data : p)));
-    } catch (e) { alert(e.message); }
-  };
+  const toggleMutation = useMutation({
+    mutationFn: (promo) => api.put(`/promo/${promo._id}`, { isActive: !promo.isActive }),
+    onSuccess: invalidate,
+    onError: (e) => alert(e.message),
+  });
 
   return (
     <div>
@@ -153,7 +146,7 @@ const AdminPromos = () => {
                     <td className="px-3 py-3.5 font-lato text-[13px] text-[#666]">{p.usedCount}{p.usageLimit ? ` / ${p.usageLimit}` : ''}</td>
                     <td className="px-3 py-3.5 font-lato text-[12px] text-[#999]">{p.expiresAt ? formatDate(p.expiresAt) : 'Never'}</td>
                     <td className="px-5 py-3.5 text-right">
-                      <button onClick={() => toggleActive(p)}
+                      <button onClick={() => toggleMutation.mutate(p)}
                         className={`relative w-10 h-5.5 rounded-full transition-colors cursor-pointer ${p.isActive ? 'bg-brand-green' : 'bg-[#ccc]'}`}>
                         <span className={`absolute top-0.5 w-4.5 h-4.5 bg-white rounded-full transition-all ${p.isActive ? 'left-5' : 'left-0.5'}`} />
                       </button>
@@ -167,7 +160,7 @@ const AdminPromos = () => {
       )}
 
       {showCreate && (
-        <CreateModal onClose={() => setShowCreate(false)} onCreated={(p) => setPromos((prev) => [p, ...prev])} />
+        <CreateModal onClose={() => setShowCreate(false)} onCreated={() => { invalidate(); setShowCreate(false); }} />
       )}
     </div>
   );

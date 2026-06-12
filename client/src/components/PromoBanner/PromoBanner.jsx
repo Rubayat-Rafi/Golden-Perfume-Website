@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 const PromoBanner = () => (
   <div
-    className="relative py-14 md:py-20 bg-cover bg-center overflow-hidden"
+    className="relative py-8 md:py-12 bg-cover bg-center overflow-hidden"
     style={{ backgroundImage: "url('/assets/brand/cat-essential.jpg')" }}
   >
     {/* Dark overlay */}

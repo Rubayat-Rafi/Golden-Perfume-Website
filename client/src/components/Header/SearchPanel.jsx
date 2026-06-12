@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Search, X, Package } from 'lucide-react';
 import SingleProduct from '../Product/SingleProduct';
-import { api } from '../../lib/api';
+import { useSearchProducts } from '../../hooks/queries';
 import { normalizeProduct } from '../../lib/normalize';
 
 const SearchPanel = ({ query, onChange, onClose }) => {
   const inputRef = useRef(null);
-  const [results,  setResults]  = useState([]);
-  const [loading,  setLoading]  = useState(false);
+  const { data: raw, isFetching: loading } = useSearchProducts(query.trim());
+  const results = (raw || []).map(normalizeProduct);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -18,22 +18,6 @@ const SearchPanel = ({ query, onChange, onClose }) => {
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
-
-  // Debounced API search
-  useEffect(() => {
-    const q = query.trim();
-    if (!q) { setResults([]); return; }
-
-    setLoading(true);
-    const timer = setTimeout(() => {
-      api.get(`/products?search=${encodeURIComponent(q)}&limit=8`)
-        .then((d) => setResults((d.data || []).map(normalizeProduct)))
-        .catch(() => setResults([]))
-        .finally(() => setLoading(false));
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [query]);
 
   const q = query.trim();
 

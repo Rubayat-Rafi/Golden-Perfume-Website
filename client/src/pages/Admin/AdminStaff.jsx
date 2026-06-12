@@ -1,7 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ShieldCheck, Plus, X, Trash2, Eye, EyeOff, Check, ChevronLeft, ChevronRight, Mail, Calendar, Pencil } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
+import { useAdminStaff } from '../../hooks/queries';
 import { formatDate, formatDateTime, PageHeader, Card, Spinner, EmptyState } from './adminUI';
 
 // Assignable admin sections (must match backend STAFF_SECTIONS + admin nav)
@@ -52,8 +54,8 @@ const CreateModal = ({ onClose, onCreated }) => {
   const submit = async () => {
     setErr(''); setBusy(true);
     try {
-      const d = await api.post('/admin/staff', { ...form, permissions: perms });
-      onCreated(d.data);
+      await api.post('/admin/staff', { ...form, permissions: perms });
+      onCreated();
       onClose();
     } catch (e) {
       setErr(e.message || 'Failed to create staff');
@@ -114,8 +116,8 @@ const EditModal = ({ member, onClose, onSaved }) => {
   const save = async () => {
     setBusy(true);
     try {
-      const d = await api.patch(`/admin/staff/${member._id}`, { name, permissions: perms });
-      onSaved(d.data);
+      await api.patch(`/admin/staff/${member._id}`, { name, permissions: perms });
+      onSaved();
       onClose();
     } catch (e) {
       alert(e.message || 'Failed to save');
@@ -236,38 +238,28 @@ const DetailsDrawer = ({ member, onClose, onEdit, onRemove, isSelf }) => {
 
 const AdminStaff = () => {
   const { user: me } = useAuth();
-  const [team, setTeam]       = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState(null);
   const [viewing, setViewing] = useState(null);
   const [page, setPage]       = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal]     = useState(0);
 
-  const load = useCallback(() => {
-    setLoading(true);
-    api.get(`/admin/staff?page=${page}&limit=10`)
-      .then((d) => { setTeam(d.data || []); setTotalPages(d.totalPages || 1); setTotal(d.total || 0); })
-      .catch(() => setTeam([]))
-      .finally(() => setLoading(false));
-  }, [page]);
-  useEffect(() => { load(); }, [load]);
+  const { data, isLoading: loading } = useAdminStaff({ page: String(page), limit: '10' });
+  const team       = data?.data       || [];
+  const totalPages = data?.totalPages || 1;
+  const total      = data?.total      || 0;
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin', 'staff'] });
 
   const remove = async (m) => {
     if (!confirm(`Remove ${m.name}? This cannot be undone.`)) return;
     try {
       await api.del(`/admin/staff/${m._id}`);
-      setTeam((prev) => prev.filter((x) => x._id !== m._id));
       setViewing((v) => (v && v._id === m._id ? null : v));
-      setTotal((t) => t - 1);
+      invalidate();
     } catch (e) { alert(e.message); }
   };
 
-  const onSaved = (u) => {
-    setTeam((p) => p.map((x) => x._id === u._id ? u : x));
-    setViewing((v) => (v && v._id === u._id ? u : v));
-  };
+  const onSaved = () => invalidate();
 
   return (
     <div>
@@ -360,7 +352,7 @@ const AdminStaff = () => {
         </Card>
       )}
 
-      {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreated={(m) => { setTeam((p) => [m, ...p]); setTotal((t) => t + 1); }} />}
+      {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreated={invalidate} />}
       {editing && <EditModal member={editing} onClose={() => setEditing(null)} onSaved={onSaved} />}
       {viewing && (
         <DetailsDrawer

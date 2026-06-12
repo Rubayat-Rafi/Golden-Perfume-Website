@@ -1,9 +1,39 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SectionTitle from '../shared/SectionTitle/SectionTitle';
 import SingleProduct from '../Product/SingleProduct';
-import { api } from '../../lib/api';
+import { useProducts } from '../../hooks/queries';
 import { normalizeProduct } from '../../lib/normalize';
+
+const DEMO_PRODUCTS = [
+  {
+    id: 'demo-rose-body-oil', slug: 'demo-rose-body-oil',
+    name: 'Rose & Oud Body Oil', category: 'Fragrance & Body Oils',
+    price: '24.99', image: '/assets/img/product-1.jpg',
+    isSale: false, isNew: true, isFeatured: true, isStocked: true,
+    variants: [], reviews: [],
+  },
+  {
+    id: 'demo-arabian-incense', slug: 'demo-arabian-incense',
+    name: 'Arabian Nights Incense', category: 'Incense',
+    price: '14.99', image: '/assets/img/product-2.jpg',
+    isSale: false, isNew: false, isFeatured: true, isStocked: true,
+    variants: [], reviews: [],
+  },
+  {
+    id: 'demo-black-seed-oil', slug: 'demo-black-seed-oil',
+    name: 'Pure Black Seed Oil', category: 'Essential Oil',
+    price: '19.99', image: '/assets/img/product-3.jpg',
+    isSale: true, isNew: false, isFeatured: true, isStocked: true,
+    variants: [], reviews: [],
+  },
+  {
+    id: 'demo-turmeric-soap', slug: 'demo-turmeric-soap',
+    name: 'Turmeric Glow Soap', category: 'Soap',
+    price: '9.99', image: '/assets/img/product-4.jpg',
+    isSale: false, isNew: true, isFeatured: true, isStocked: true,
+    variants: [], reviews: [],
+  },
+];
 
 const SkeletonCard = () => (
   <div className="bg-cream border border-linen overflow-hidden animate-pulse rounded-sm">
@@ -17,18 +47,11 @@ const SkeletonCard = () => (
 );
 
 const FeaturedProducts = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading]   = useState(true);
-
-  useEffect(() => {
-    api.get('/products?featured=1&limit=8')
-      .then((d) => setProducts((d.data || []).map(normalizeProduct)))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, isLoading: loading } = useProducts({ featured: 1, limit: 8 });
+  const products = (data?.data || []).map(normalizeProduct);
 
   return (
-    <section className="pt-8 md:pt-16 pb-8 md:pb-16 bg-cream">
+    <section className="py-6 md:py-10 bg-cream">
       <div className="max-w-305 mx-auto px-4 md:px-10">
         <SectionTitle
           subTitle="Hand-Picked"
@@ -39,7 +62,7 @@ const FeaturedProducts = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
-            : products.map((product) => (
+            : (products.length > 0 ? products : DEMO_PRODUCTS).map((product) => (
                 <SingleProduct key={product.id} product={product} />
               ))
           }

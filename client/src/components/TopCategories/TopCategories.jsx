@@ -1,106 +1,72 @@
-import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import SliderLib from 'react-slick';
-import SectionTitle from '../shared/SectionTitle/SectionTitle';
-import { api } from '../../lib/api';
+import { useCategories } from '../../hooks/queries';
 import { normalizeCategory } from '../../lib/normalize';
-
-const Slider = SliderLib.default ?? SliderLib;
 
 const toShopUrl = (slug) => {
   if (slug === 'new-arrival') return '/shop?new=1';
   return `/shop?category=${slug}`;
 };
 
-const ArrowBtn = ({ onClick, dir }) => (
-  <button
-    onClick={onClick}
-    aria-label={dir === 'prev' ? 'Previous' : 'Next'}
-    className={`
-      absolute ${dir === 'prev' ? 'left-2 md:left-4' : 'right-2 md:right-4'}
-      top-1/2 -translate-y-1/2 z-10
-      w-8 h-8 md:w-10 md:h-10 rounded-full
-      bg-white border border-[#e8e8e8] shadow-md
-      flex items-center justify-center
-      hover:bg-dark-green hover:border-dark-green group
-      opacity-0 group-hover/carousel:opacity-100
-      transition-all duration-200 cursor-pointer
-    `}
-  >
-    {dir === 'prev'
-      ? <ChevronLeft  size={16} className="text-[#888] group-hover:text-white transition-colors" />
-      : <ChevronRight size={16} className="text-[#888] group-hover:text-white transition-colors" />
-    }
-  </button>
-);
-
 const CategoryCard = ({ cat }) => (
-  <Link to={toShopUrl(cat.slug)} className="mx-0.5 block group">
-    <div className="bg-white overflow-hidden border border-[#f0f0f0] shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-300">
-      <div className="relative aspect-square overflow-hidden">
+  <Link to={toShopUrl(cat.slug)} className="block group text-center">
+    {/* Circular image */}
+    <div className="relative mx-auto mb-3 overflow-hidden
+                    w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32
+                    border-2 border-linen group-hover:border-brand-green/50
+                    shadow-[0_4px_16px_rgba(20,40,25,0.07)]
+                    group-hover:shadow-[0_8px_28px_rgba(20,40,25,0.14)]
+                    transition-all duration-300">
+      {cat.image ? (
         <img
           src={cat.image}
           alt={cat.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          loading="lazy"
         />
-        <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/10 transition-colors duration-300" />
-      </div>
-      <div className="px-1.5 py-2.5 text-center">
-        <span className="font-lato text-[10px] md:text-[12px] text-[#444] leading-snug block capitalize font-bold tracking-[0.5px] line-clamp-2">
-          {cat.name}
-        </span>
-      </div>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-brand-green/8">
+          <span className="font-playfair text-[28px] text-brand-green/40">{cat.name.charAt(0)}</span>
+        </div>
+      )}
+      <div className="absolute inset-0 bg-dark-green/0 group-hover:bg-dark-green/18  transition-colors duration-300" />
     </div>
+
+    {/* Label */}
+    <span className="font-lato text-[10px] sm:text-[11px] uppercase tracking-[1.5px] text-dark-green group-hover:text-brand-green transition-colors block font-bold leading-snug line-clamp-2">
+      {cat.name}
+    </span>
+
+    {/* Gold underline animation */}
+    <span className="block mt-1.5 h-px w-0 group-hover:w-6 mx-auto bg-gold transition-all duration-300" />
   </Link>
 );
 
 const TopCategories = () => {
-  const sliderRef = useRef(null);
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    api.get('/categories')
-      .then((d) => setCategories(
-        (d.data || []).map(normalizeCategory).filter((c) => !c.parent)  // top-level only
-      ))
-      .catch(() => {});
-  }, []);
-
-  const settings = {
-    dots: false, arrows: false, infinite: true,
-    autoplay: true, autoplaySpeed: 2200, speed: 600,
-    cssEase: 'ease-in-out', pauseOnHover: true,
-    slidesToShow: 9, slidesToScroll: 1,
-    responsive: [
-      { breakpoint: 1280, settings: { slidesToShow: 8 } },
-      { breakpoint: 1024, settings: { slidesToShow: 6 } },
-      { breakpoint: 768,  settings: { slidesToShow: 5 } },
-      { breakpoint: 600,  settings: { slidesToShow: 4 } },
-      { breakpoint: 480,  settings: { slidesToShow: 3 } },
-      { breakpoint: 360,  settings: { slidesToShow: 2 } },
-    ],
-  };
+  const { data: raw = [] } = useCategories();
+  const categories = raw.map(normalizeCategory).filter((c) => !c.parent);
 
   if (!categories.length) return null;
 
   return (
-    <section className="overflow-hidden pt-8 md:pt-12 pb-8 md:pb-12 bg-cream">
+    <section className="py-7 md:py-10 bg-white">
       <div className="max-w-305 mx-auto px-4 md:px-10">
-        <SectionTitle
-          subTitle="Browse Collections"
-          title="Shop by Category"
-          body="From fragrance oils to herbal smudges — explore our full range of natural products."
-        />
-      </div>
-      <div className="relative px-2 md:px-4 group/carousel">
-        <ArrowBtn dir="prev" onClick={() => sliderRef.current?.slickPrev()} />
-        <Slider ref={sliderRef} {...settings}>
+
+        {/* Section header */}
+        <div className="text-center mb-8 md:mb-10">
+          <span className="font-lato text-[11px] uppercase tracking-[4px] text-gold block mb-2">
+            Explore
+          </span>
+          <h2 className="font-playfair font-normal text-[26px] md:text-[34px] text-dark-green">
+            Shop by Category
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-x-1 gap-y-4 sm:gap-x-2 sm:gap-y-5 md:gap-x-3 md:gap-y-6">
           {categories.map((cat) => (
             <CategoryCard key={cat.id} cat={cat} />
           ))}
-        </Slider>
-        <ArrowBtn dir="next" onClick={() => sliderRef.current?.slickNext()} />
+        </div>
+
       </div>
     </section>
   );

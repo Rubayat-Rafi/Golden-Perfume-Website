@@ -1,7 +1,7 @@
 const Subscribe = () => {
   return (
     <section
-      className="mt-8 md:mt-16 relative py-12 md:py-16 bg-cover bg-center overflow-hidden"
+      className="mt-4 md:mt-8 relative py-8 md:py-10 bg-cover bg-center overflow-hidden"
       style={{ backgroundImage: "url('/assets/brand/cat-soap-white.jpg')" }}
     >
       <div className="absolute inset-0 bg-dark-green/85" />

@@ -7,6 +7,7 @@ import {
   deleteCategory,
 } from '../controllers/categoryController.js';
 import { protect, requirePermission } from '../middleware/protect.js';
+import { uploadCategory } from '../middleware/upload.js';
 
 const router = Router();
 
@@ -15,8 +16,8 @@ router.get('/',        getCategories);
 router.get('/:slug',   getCategoryBySlug);
 
 // Admin / permitted staff
-router.post('/',       protect, requirePermission('categories'), createCategory);
-router.put('/:id',     protect, requirePermission('categories'), updateCategory);
+router.post('/',       protect, requirePermission('categories'), uploadCategory, createCategory);
+router.put('/:id',     protect, requirePermission('categories'), uploadCategory, updateCategory);
 router.delete('/:id',  protect, requirePermission('categories'), deleteCategory);
 
 export default router;

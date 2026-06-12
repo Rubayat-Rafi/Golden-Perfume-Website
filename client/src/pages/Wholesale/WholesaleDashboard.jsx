@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Clock, XCircle, CheckCircle, ShoppingBag, DollarSign, Truck,
   Tag, Building2, Phone, Mail, FileText, Layers, ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { api } from '../../lib/api';
+import { useMyWholesaleApplication, useMyOrders } from '../../hooks/queries';
 import OrderCard, { money, fmtDate } from '../../components/OrderCard/OrderCard';
 
 // Pricing tiers (PLAN.md §8) — `match` maps to the application's monthlyOrderRange
@@ -45,32 +44,13 @@ const StatusShell = ({ icon: Icon, accent, title, children }) => (
 
 const WholesaleDashboard = () => {
   const { user, role } = useAuth();
-  const [app, setApp]         = useState(undefined);  // undefined = loading, null = none
-  const [orders, setOrders]   = useState([]);
-  const [loading, setLoading] = useState(true);
+  const isApproved = role === 'wholesale' || role === 'admin';
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const d = await api.get('/wholesale/my-application');
-        setApp(d.data);
-      } catch {
-        setApp(null);
-      }
-      if (role === 'wholesale' || role === 'admin') {
-        try {
-          const o = await api.get('/orders/mine?limit=50');
-          setOrders(o.data || []);
-        } catch { /* ignore */ }
-      }
-      setLoading(false);
-    };
-    load();
-  }, [role]);
+  const { data: app, isLoading: appLoading } = useMyWholesaleApplication();
+  const { data: orders = [], isLoading: ordersLoading } = useMyOrders();
+  const loading = appLoading || (isApproved && ordersLoading);
 
   if (loading) return <Spinner />;
-
-  const isApproved = role === 'wholesale' || role === 'admin';
 
   // ── No application & not wholesale → invite to apply ──
   if (!app && !isApproved) {

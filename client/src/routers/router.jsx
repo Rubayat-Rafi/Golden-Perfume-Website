@@ -10,6 +10,8 @@ import ShopPage from "../pages/Shop/ShopPage";
 import ProductDetail from "../pages/ProductDetail/ProductDetail";
 import ProtectedRoute from "../components/Auth/ProtectedRoute";
 import ContactPage from "../pages/Contact/ContactPage";
+import CheckoutPage from "../pages/Checkout/CheckoutPage";
+import TrackOrderPage from "../pages/TrackOrder/TrackOrderPage";
 import ProfilePage from "../pages/Profile/ProfilePage";
 import WholesaleDashboard from "../pages/Wholesale/WholesaleDashboard";
 import AdminLayout from "../pages/Admin/AdminLayout";
@@ -24,6 +26,8 @@ import AdminStaff from "../pages/Admin/AdminStaff";
 import { PermGuard } from "../pages/Admin/access";
 import AdminPromos from "../pages/Admin/AdminPromos";
 import AdminMessages from "../pages/Admin/AdminMessages";
+import AdminCategoryForm from "../pages/Admin/AdminCategoryForm";
+import AdminProductForm from "../pages/Admin/AdminProductForm";
 
 // Stub pages for protected routes — replace with real pages as you build them
 const Stub = ({ title }) => (
@@ -49,7 +53,16 @@ export const router = createBrowserRouter([
       { path: "cart",        element: <CartPage /> },
       { path: "wishlist",    element: <WishlistPage /> },
       { path: "product/:id", element: <ProductDetail /> },
-      { path: "contact",    element: <ContactPage /> },
+      { path: "contact",       element: <ContactPage /> },
+      { path: "track-order",   element: <TrackOrderPage /> },
+      {
+        path: "checkout",
+        element: (
+          <ProtectedRoute>
+            <CheckoutPage />
+          </ProtectedRoute>
+        ),
+      },
 
       // Staff + Admin only
       {
@@ -97,8 +110,12 @@ export const router = createBrowserRouter([
       { path: "banners",   element: <PermGuard section="banners"><AdminBanners /></PermGuard> },
       { path: "orders",    element: <PermGuard section="orders"><AdminOrders /></PermGuard> },
       { path: "wholesale", element: <PermGuard section="wholesale"><AdminWholesale /></PermGuard> },
-      { path: "products",  element: <PermGuard section="products"><AdminProducts /></PermGuard> },
-      { path: "categories", element: <PermGuard section="categories"><AdminCategories /></PermGuard> },
+      { path: "products",           element: <PermGuard section="products"><AdminProducts /></PermGuard> },
+      { path: "products/new",       element: <PermGuard section="products"><AdminProductForm /></PermGuard> },
+      { path: "products/:id/edit",  element: <PermGuard section="products"><AdminProductForm /></PermGuard> },
+      { path: "categories",           element: <PermGuard section="categories"><AdminCategories /></PermGuard> },
+      { path: "categories/new",       element: <PermGuard section="categories"><AdminCategoryForm /></PermGuard> },
+      { path: "categories/:id/edit",  element: <PermGuard section="categories"><AdminCategoryForm /></PermGuard> },
       { path: "customers", element: <PermGuard section="customers"><AdminCustomers /></PermGuard> },
       { path: "promos",    element: <PermGuard section="promos"><AdminPromos /></PermGuard> },
       { path: "messages",  element: <PermGuard section="messages"><AdminMessages /></PermGuard> },

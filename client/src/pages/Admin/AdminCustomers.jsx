@@ -1,22 +1,15 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Users, Search, ChevronLeft, ChevronRight, Eye, X, Mail, Phone, Calendar, ShoppingBag, DollarSign, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
+import { useAdminUsers, useAdminUser } from '../../hooks/queries';
 import { money, formatDate, formatDateTime, PageHeader, Card, Spinner, EmptyState } from './adminUI';
 import OrderCard from '../../components/OrderCard/OrderCard';
 
 // Full customer detail slide-over
 const DetailsDrawer = ({ userId, onClose }) => {
-  const [data, setData]     = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    api.get(`/admin/users/${userId}`)
-      .then((d) => setData(d.data))
-      .catch(() => setData(null))
-      .finally(() => setLoading(false));
-  }, [userId]);
+  const { data, isLoading: loading } = useAdminUser(userId);
 
   return (
     <>
@@ -112,30 +105,37 @@ const DetailsDrawer = ({ userId, onClose }) => {
 const AdminCustomers = () => {
   const { role } = useAuth();
   const isAdmin = role === 'admin';
-  const [users, setUsers]     = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [search, setSearch]   = useState('');
   const [debounced, setDebounced] = useState('');
   const [page, setPage]       = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal]     = useState(0);
   const [viewId, setViewId]   = useState(null);
   const [deletionOnly, setDeletionOnly] = useState(false);
+
+  const queryParams = {
+    page: String(page),
+    limit: '20',
+    ...(debounced ? { search: debounced } : {}),
+    ...(deletionOnly ? { deletion: '1' } : {}),
+  };
+  const { data, isLoading: loading } = useAdminUsers(queryParams);
+  const users      = data?.data       || [];
+  const totalPages = data?.totalPages || 1;
+  const total      = data?.total      || 0;
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
 
   const remove = async (u) => {
     if (!confirm(`Delete ${u.name}'s account? This permanently removes the customer and cannot be undone.`)) return;
     try {
       await api.del(`/admin/users/${u._id}`);
-      setUsers((prev) => prev.filter((x) => x._id !== u._id));
-      setTotal((t) => t - 1);
+      invalidate();
     } catch (e) { alert(e.message); }
   };
 
   const rejectDeletion = async (u) => {
     try {
       await api.patch(`/admin/users/${u._id}/deletion-reject`);
-      if (deletionOnly) setUsers((prev) => prev.filter((x) => x._id !== u._id));
-      else setUsers((prev) => prev.map((x) => (x._id === u._id ? { ...x, deletionStatus: 'rejected' } : x)));
+      invalidate();
     } catch (e) { alert(e.message); }
   };
 
@@ -143,21 +143,6 @@ const AdminCustomers = () => {
     const t = setTimeout(() => { setDebounced(search); setPage(1); }, 400);
     return () => clearTimeout(t);
   }, [search]);
-
-  const load = useCallback(() => {
-    setLoading(true);
-    const q = new URLSearchParams();
-    if (debounced) q.set('search', debounced);
-    if (deletionOnly) q.set('deletion', '1');
-    q.set('page', String(page));
-    q.set('limit', '20');
-    api.get(`/admin/users?${q}`)
-      .then((d) => { setUsers(d.data || []); setTotalPages(d.totalPages || 1); setTotal(d.total || 0); })
-      .catch(() => setUsers([]))
-      .finally(() => setLoading(false));
-  }, [debounced, page, deletionOnly]);
-
-  useEffect(() => { load(); }, [load]);
 
   return (
     <div>

@@ -5,7 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
 import SingleProduct from '../../components/Product/SingleProduct';
-import { api } from '../../lib/api';
+import { useProduct } from '../../hooks/queries';
 import { normalizeProduct } from '../../lib/normalize';
 
 const StarRating = ({ rating }) => (
@@ -23,28 +23,23 @@ const ProductDetail = () => {
   const { addItem, items: cartItems } = useCart();
   const { toggleItem, isWishlisted }  = useWishlist();
 
-  const [product, setProduct] = useState(null);
-  const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   const [activeImg,    setActiveImg]    = useState(0);
   const [selectedVar,  setSelectedVar]  = useState(0);
   const [qty,          setQty]          = useState(1);
 
+  const { data: raw, isLoading: loading, isError } = useProduct(id);
+  const product = raw?.data ? normalizeProduct(raw.data) : null;
+  const related = (raw?.related || []).map(normalizeProduct);
+
   useEffect(() => {
-    setLoading(true);
     setActiveImg(0);
     setSelectedVar(0);
     setQty(1);
-
-    api.get(`/products/${id}`)
-      .then((d) => {
-        setProduct(normalizeProduct(d.data));
-        setRelated((d.related || []).map(normalizeProduct));
-      })
-      .catch(() => navigate('/shop', { replace: true }))
-      .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (isError) navigate('/shop', { replace: true });
+  }, [isError]);
 
   if (loading) {
     return (

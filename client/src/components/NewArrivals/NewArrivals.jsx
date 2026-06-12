@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SectionTitle from '../shared/SectionTitle/SectionTitle';
 import SingleProduct from '../Product/SingleProduct';
-import { api } from '../../lib/api';
+import { useProducts } from '../../hooks/queries';
 import { normalizeProduct } from '../../lib/normalize';
 
 const SkeletonCard = () => (
@@ -17,18 +16,11 @@ const SkeletonCard = () => (
 );
 
 const NewArrivals = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading]   = useState(true);
-
-  useEffect(() => {
-    api.get('/products?isNew=1&limit=8')
-      .then((d) => setProducts((d.data || []).map(normalizeProduct)))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, isLoading: loading } = useProducts({ isNew: 1, limit: 8 });
+  const products = (data?.data || []).map(normalizeProduct);
 
   return (
-    <section className="pt-8 md:pt-16 pb-8 md:pb-16 bg-cream">
+    <section className="py-6 md:py-10 bg-cream">
       <div className="max-w-305 mx-auto px-4 md:px-10">
         <SectionTitle
           subTitle="Fragrances"
