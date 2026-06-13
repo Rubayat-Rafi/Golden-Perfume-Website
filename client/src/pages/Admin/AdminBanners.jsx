@@ -201,7 +201,7 @@ const EditModal = ({ banner, onClose, onSaved }) => {
 // ── AdminBanners ──────────────────────────────────────────────────────────────
 const AdminBanners = () => {
   const queryClient = useQueryClient();
-  const invalidate  = () => queryClient.invalidateQueries({ queryKey: ['banners', 'all'] });
+  const invalidate  = () => queryClient.invalidateQueries({ queryKey: ['banners'] });
 
   const { data: banners = [], isLoading: loading } = useAllBanners();
   const [showCreate,    setShowCreate]    = useState(false);
