@@ -41,6 +41,8 @@ const productSchema = new mongoose.Schema(
     isActive:   { type: Boolean, default: true,  index: true },
     isStocked:  { type: Boolean, default: true },
 
+    order:    { type: Number, default: 0, index: true },
+
     tags:     { type: [String], default: [] },
     variants: { type: [variantSchema], default: [] },
     reviews:  { type: [reviewSchema], default: [] },

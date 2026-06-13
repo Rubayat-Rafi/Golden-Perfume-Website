@@ -158,6 +158,8 @@ const AdminProductForm = () => {
     if (!name.trim())       { setErr('Product name is required'); return; }
     if (!finalCat)          { setErr('Category is required'); return; }
     if (!pNum.trim())       { setErr('Product number is required'); return; }
+    const missingWholesale = variants.some((v) => !v.wholesalePrice || Number(v.wholesalePrice) <= 0);
+    if (missingWholesale)   { setErr('Wholesale price is required for all variants'); return; }
     setErr(''); setBusy(true);
     try {
       const fd = new FormData();
@@ -506,9 +508,9 @@ const AdminProductForm = () => {
                         />
                       </div>
                       <div>
-                        <label className={labelCls}>Wholesale Price ($)</label>
+                        <label className={labelCls}>Wholesale Price ($) <span className="text-red-500">*</span></label>
                         <input
-                          type="number" min="0" step="0.01"
+                          type="number" min="0" step="0.01" required
                           value={v.wholesalePrice}
                           onChange={(e) => setVf(i, 'wholesalePrice', e.target.value)}
                           placeholder="0.00"

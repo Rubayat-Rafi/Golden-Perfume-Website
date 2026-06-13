@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ChevronUp, ChevronDown } from 'lucide-react';
+import { useCart } from '../../hooks/useCart';
 
 const EXCLUDED = ['/admin', '/staff', '/wholesale'];
 
 const ScrollButtons = () => {
   const { pathname } = useLocation();
+  const { sidebarOpen } = useCart();
   const [scrolled, setScrolled]     = useState(false);
   const [atBottom, setAtBottom]     = useState(false);
 
@@ -24,7 +26,7 @@ const ScrollButtons = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  if (excluded) return null;
+  if (excluded || sidebarOpen) return null;
 
   const scrollUp   = () => window.scrollTo({ top: 0, behavior: 'smooth' });
   const scrollDown = () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });

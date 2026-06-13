@@ -4,6 +4,7 @@ import Header from "../components/Header/Header";
 import ScrollToTop from "../components/ScrollToTop/ScrollToTop";
 import ScrollButtons from "../components/ScrollButtons/ScrollButtons";
 import CartSidebar from "../components/Cart/CartSidebar";
+import WholesalePopup from "../components/WholesalePopup/WholesalePopup";
 
 const MainLayout = () => {
   return (
@@ -16,6 +17,7 @@ const MainLayout = () => {
       <Footer />
       <ScrollButtons />
       <CartSidebar />
+      <WholesalePopup />
     </>
   );
 };

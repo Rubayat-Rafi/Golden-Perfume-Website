@@ -135,6 +135,26 @@ export const updateCategory = async (req, res, next) => {
   }
 };
 
+// ─── PUT /api/categories/reorder ──────────────────────────────────────────
+// Admin — persist drag-sorted order. Body: { items: [{ id, order }] }
+export const reorderCategories = async (req, res, next) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items) || items.length === 0)
+      return res.status(400).json({ success: false, message: 'items array is required' });
+
+    await Category.bulkWrite(
+      items.map(({ id, order }) => ({
+        updateOne: { filter: { _id: id }, update: { $set: { order: Number(order) } } },
+      }))
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── DELETE /api/categories/:id ────────────────────────────────────────────
 // Admin only — soft-delete (sets isActive: false)
 export const deleteCategory = async (req, res, next) => {

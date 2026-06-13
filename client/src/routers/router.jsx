@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, useParams } from "react-router-dom";
 import MainLayout from "../MainLayout/MainLayout";
 import Home from "../pages/Home/Home";
 import LoginPage from "../pages/Login/LoginPage";
@@ -29,6 +29,9 @@ import AdminMessages from "../pages/Admin/AdminMessages";
 import AdminCategoryForm from "../pages/Admin/AdminCategoryForm";
 import AdminProductForm from "../pages/Admin/AdminProductForm";
 
+// Remounts ProductDetail (resetting all local state) when the slug changes
+const ProductDetailRoute = () => { const { id } = useParams(); return <ProductDetail key={id} />; };
+
 // Stub pages for protected routes — replace with real pages as you build them
 const Stub = ({ title }) => (
   <div className="min-h-screen flex items-center justify-center font-playfair text-[28px] text-[#aaa]">
@@ -52,17 +55,9 @@ export const router = createBrowserRouter([
       { path: "shop",     element: <ShopPage /> },
       { path: "cart",        element: <CartPage /> },
       { path: "wishlist",    element: <WishlistPage /> },
-      { path: "product/:id", element: <ProductDetail /> },
-      { path: "contact",       element: <ContactPage /> },
-      { path: "track-order",   element: <TrackOrderPage /> },
-      {
-        path: "checkout",
-        element: (
-          <ProtectedRoute>
-            <CheckoutPage />
-          </ProtectedRoute>
-        ),
-      },
+      { path: "product/:id", element: <ProductDetailRoute /> },
+      { path: "contact",     element: <ContactPage /> },
+      { path: "track-order", element: <TrackOrderPage /> },
 
       // Staff + Admin only
       {
@@ -93,6 +88,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <WholesaleDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/checkout",
+    element: (
+      <ProtectedRoute>
+        <CheckoutPage />
       </ProtectedRoute>
     ),
   },

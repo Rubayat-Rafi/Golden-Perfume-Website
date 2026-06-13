@@ -53,6 +53,7 @@ export const getProducts = async (req, res, next) => {
       'price-desc': { 'variants.0.retailPrice': -1 },
       'newest':     { createdAt: -1 },
       'featured':   { isFeatured: -1, createdAt: -1 },
+      'order':      { order: 1, createdAt: -1 },
     };
     const sortObj = sortMap[sort] ?? { name: 1 };
 
@@ -206,6 +207,26 @@ export const updateProduct = async (req, res, next) => {
     );
 
     res.json({ success: true, data: product });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── PUT /api/products/reorder ────────────────────────────────────────────
+// Admin — persist drag-sorted order. Body: { items: [{ id, order }] }
+export const reorderProducts = async (req, res, next) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items) || items.length === 0)
+      return res.status(400).json({ success: false, message: 'items array is required' });
+
+    await Product.bulkWrite(
+      items.map(({ id, order }) => ({
+        updateOne: { filter: { _id: id }, update: { $set: { order: Number(order) } } },
+      }))
+    );
+
+    res.json({ success: true });
   } catch (err) {
     next(err);
   }

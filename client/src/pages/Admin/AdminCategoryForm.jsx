@@ -234,17 +234,6 @@ const AdminCategoryForm = () => {
             </div>
           </div>}
 
-          {/* Display order */}
-          <div className="max-w-40">
-            <label className={labelCls}>Display Order</label>
-            <input
-              type="number"
-              value={order}
-              onChange={(e) => setOrder(e.target.value)}
-              className={inputCls}
-            />
-          </div>
-
           {/* Status */}
           <div>
             <label className={labelCls}>Status</label>

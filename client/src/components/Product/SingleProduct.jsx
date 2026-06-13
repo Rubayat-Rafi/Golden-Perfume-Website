@@ -2,16 +2,21 @@ import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import { useWishlist } from '../../hooks/useWishlist';
+import { useAuth } from '../../hooks/useAuth';
 
 const SingleProduct = ({ product }) => {
   const { name, price, image, isSale, isNew, id, category, variants } = product;
 
   const { addItem, openSidebar } = useCart();
   const { toggleItem, isWishlisted } = useWishlist();
+  const { role } = useAuth();
 
-  const wishlisted   = isWishlisted(id);
-  const isVariable   = variants?.length > 0;
-  const displayPrice = isVariable ? variants[0].price : price;
+  const wishlisted      = isWishlisted(id);
+  const isVariable      = variants?.length > 0;
+  const displayPrice    = isVariable ? variants[0].price : price;
+  const isWholesale     = role === 'wholesale' || role === 'admin';
+  const wholesalePrice  = isVariable ? variants[0]?.wholesalePrice : null;
+  const showWholesale   = isWholesale && wholesalePrice;
 
   return (
     <Link
@@ -40,14 +45,18 @@ const SingleProduct = ({ product }) => {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
 
-        {/* Hover action bar — slides up from bottom */}
+        {/* Hover action bar */}
         <div
           className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-10"
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
         >
           <div className="flex">
             <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); addItem(product, 1); openSidebar(); }}
+              onClick={(e) => {
+              e.preventDefault(); e.stopPropagation();
+              addItem(showWholesale ? { ...product, price: wholesalePrice } : product, 1);
+              openSidebar();
+            }}
               className="flex-1 h-10 bg-dark-green/90 backdrop-blur-sm text-linen font-lato text-[11px] font-bold uppercase tracking-[1px] flex items-center justify-center gap-1.5 hover:bg-dark-green transition-colors cursor-pointer"
             >
               <ShoppingCart size={13} />
@@ -78,12 +87,26 @@ const SingleProduct = ({ product }) => {
         <span className="font-playfair text-dark-green text-sm sm:text-[15px] capitalize block mb-1.5 group-hover:text-brand-green transition-colors duration-200 leading-tight">
           {name}
         </span>
-        <span className="font-playfair font-bold text-gold text-sm sm:text-base leading-none">
-          {isVariable
-            ? <><span className="font-lato font-normal text-dark-green/40 text-[11px] mr-1">From</span>${displayPrice}</>
-            : `$${displayPrice}`
-          }
-        </span>
+
+        {showWholesale ? (
+          <div className="flex flex-col gap-0.5">
+            <span className="font-playfair font-bold text-brand-green text-sm sm:text-base leading-none">
+              {isVariable && (
+                <span className="font-lato font-normal text-brand-green/60 text-[10px] mr-1">From</span>
+              )}
+              ${wholesalePrice}
+              <span className="font-lato font-normal text-brand-green/60 text-[10px] ml-1">wholesale</span>
+            </span>
+            <span className="font-lato text-dark-green/40 text-[11px] line-through">${displayPrice} retail</span>
+          </div>
+        ) : (
+          <span className="font-playfair font-bold text-gold text-sm sm:text-base leading-none">
+            {isVariable
+              ? <><span className="font-lato font-normal text-dark-green/40 text-[11px] mr-1">From</span>${displayPrice}</>
+              : `$${displayPrice}`
+            }
+          </span>
+        )}
       </div>
     </Link>
   );

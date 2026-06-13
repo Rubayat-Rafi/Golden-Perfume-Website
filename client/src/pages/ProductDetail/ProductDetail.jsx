@@ -32,14 +32,8 @@ const ProductDetail = () => {
   const related = (raw?.related || []).map(normalizeProduct);
 
   useEffect(() => {
-    setActiveImg(0);
-    setSelectedVar(0);
-    setQty(1);
-  }, [id]);
-
-  useEffect(() => {
     if (isError) navigate('/shop', { replace: true });
-  }, [isError]);
+  }, [isError, navigate]);
 
   if (loading) {
     return (
@@ -65,9 +59,11 @@ const ProductDetail = () => {
   const inCart         = cartItems.some((i) => i.id === id && i.variantSku === currentSku);
   const wishlisted     = isWishlisted(id);
 
+  const effectivePrice = (isWholesale && currentWholesalePrice) ? currentWholesalePrice : currentPrice;
+
   const handleAddToCart = () => {
     if (inCart) return;
-    addItem({ ...product, price: currentPrice, variantSku: currentSku, variantSize: currentVariant?.size }, qty);
+    addItem({ ...product, price: effectivePrice, variantSku: currentSku, variantSize: currentVariant?.size }, qty);
   };
 
   const avgRating = reviews?.length
@@ -137,13 +133,16 @@ const ProductDetail = () => {
 
             {/* Price */}
             <div className="mb-5 pb-5 border-b border-linen">
-              <span className="font-playfair font-bold text-[26px] md:text-[30px] text-dark-green">${currentPrice}</span>
-              {isWholesale && currentWholesalePrice && (
-                <div className="mt-2 inline-flex items-center gap-2 bg-brand-green/10 border border-brand-green/30 px-3 py-1.5 rounded-sm">
-                  <span className="font-lato text-[11px] uppercase tracking-[1px] text-brand-green font-bold">Wholesale:</span>
-                  <span className="font-playfair font-bold text-[16px] text-brand-green">${currentWholesalePrice}</span>
-                  <span className="font-lato text-[11px] text-brand-green/70">/ unit</span>
+              {isWholesale && currentWholesalePrice ? (
+                <div className="flex flex-col gap-1">
+                  <span className="font-playfair font-bold text-[26px] md:text-[30px] text-brand-green">
+                    ${currentWholesalePrice}
+                    <span className="font-lato font-normal text-brand-green/60 text-[12px] ml-1.5">wholesale</span>
+                  </span>
+                  <span className="font-lato text-dark-green/40 text-[14px] line-through">${currentPrice} retail</span>
                 </div>
+              ) : (
+                <span className="font-playfair font-bold text-[26px] md:text-[30px] text-gold">${currentPrice}</span>
               )}
             </div>
 
@@ -197,7 +196,10 @@ const ProductDetail = () => {
             </div>
 
             {description && (
-              <p className="font-lato text-[14px] leading-relaxed text-dark-green/70 mb-4">{description}</p>
+              <div
+                className="font-lato text-[14px] leading-relaxed text-dark-green/70 mb-4 [&_p]:mb-2 [&_a]:text-brand-green [&_a]:underline [&_a:hover]:text-dark-green"
+                dangerouslySetInnerHTML={{ __html: description }}
+              />
             )}
 
             <div className="bg-white rounded-sm p-4 flex flex-col gap-2.5">
@@ -225,7 +227,10 @@ const ProductDetail = () => {
         {content && (
           <div className="mt-12 md:mt-16 border-t border-linen pt-8 md:pt-12">
             <h2 className="font-playfair font-normal text-[20px] md:text-[24px] text-dark-green mb-4">Product Description</h2>
-            <p className="font-lato text-[14px] md:text-[15px] leading-relaxed text-dark-green/70 max-w-3xl">{content}</p>
+            <div
+              className="font-lato text-[14px] md:text-[15px] leading-relaxed text-dark-green/70 max-w-3xl [&_p]:mb-3 [&_a]:text-brand-green [&_a]:underline [&_a:hover]:text-dark-green [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1"
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
           </div>
         )}
 

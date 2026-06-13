@@ -24,6 +24,7 @@
   {
     "title": "Useful links",
     "navLinks": [
+      { "name": "Track Order", "path": "/track-order" },
       { "name": "Careers", "path": "/about" },
       { "name": "Privacy policy", "path": "/faq" },
       { "name": "Terms of use", "path": "/about" },

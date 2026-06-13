@@ -35,9 +35,9 @@ const BannerCarousel = ({ banners }) => {
   }, [next, count]);
 
   return (
-    <section className="relative overflow-hidden bg-dark-green group">
+    <section className="relative overflow-hidden bg-dark-green group w-full aspect-96/35 min-h-30">
       <div
-        className="flex transition-transform duration-700 ease-in-out h-[42vw] max-h-140 min-h-55"
+        className="flex h-full transition-transform duration-700 ease-in-out"
         style={{ transform: `translateX(-${slide * 100}%)` }}
       >
         {banners.map((b) => (
@@ -78,7 +78,7 @@ const Banner = () => {
     return <BannerCarousel banners={banners} />;
   }
 
-  return <div className="h-[42vw] max-h-140 min-h-55 bg-[#e8e8e8] animate-pulse" />;
+  return <div className="w-full aspect-96/35 min-h-30 bg-[#e8e8e8] animate-pulse" />;
 };
 
 export default Banner;

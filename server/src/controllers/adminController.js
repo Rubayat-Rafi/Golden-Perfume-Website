@@ -14,6 +14,7 @@ export const getStats = async (req, res, next) => {
     const [
       totalOrders,
       ordersToday,
+      pendingOrders,
       pendingApplications,
       totalProducts,
       totalCustomers,
@@ -24,6 +25,7 @@ export const getStats = async (req, res, next) => {
     ] = await Promise.all([
       Order.countDocuments(),
       Order.countDocuments({ createdAt: { $gte: startOfToday } }),
+      Order.countDocuments({ fulfillmentStatus: 'pending' }),
       WholesaleApplication.countDocuments({ status: 'pending' }),
       Product.countDocuments({ isActive: true }),
       User.countDocuments({ role: { $in: ['customer', 'wholesale'] } }),
@@ -63,6 +65,7 @@ export const getStats = async (req, res, next) => {
         kpis: {
           totalOrders,
           ordersToday,
+          pendingOrders,
           paidRevenue: Math.round(paidRevenue * 100) / 100,
           pendingApplications,
           totalProducts,

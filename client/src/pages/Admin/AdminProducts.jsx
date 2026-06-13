@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Package, Search, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Package, Search, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, X, GripVertical } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useProducts } from '../../hooks/queries';
 import { money, PageHeader, Card, Spinner, EmptyState } from './adminUI';
+
+const LIMIT = 15;
 
 const DeleteConfirm = ({ product, onCancel, onConfirm, busy }) => (
   <>
@@ -47,17 +49,32 @@ const AdminProducts = () => {
   const [debounced,    setDebounced]    = useState('');
   const [page,         setPage]         = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [dragIndex,    setDragIndex]    = useState(null);
+  const [overIndex,    setOverIndex]    = useState(null);
+  const [localProds,   setLocalProds]   = useState(null);
 
   useEffect(() => {
-    const t = setTimeout(() => { setDebounced(search); setPage(1); }, 400);
+    const t = setTimeout(() => { setDebounced(search); setPage(1); setLocalProds(null); }, 400);
     return () => clearTimeout(t);
   }, [search]);
 
-  const queryParams = { page: String(page), limit: '15', ...(debounced ? { search: debounced } : {}) };
+  // Use sort=order when not searching so drag order is respected
+  const queryParams = {
+    page:  String(page),
+    limit: String(LIMIT),
+    sort:  debounced ? 'name-asc' : 'order',
+    ...(debounced ? { search: debounced } : {}),
+  };
   const { data, isLoading: loading } = useProducts(queryParams);
   const products   = data?.data       || [];
   const totalPages = data?.totalPages || 1;
   const total      = data?.total      || 0;
+
+  // Reset local optimistic list whenever server data changes
+  useEffect(() => { setLocalProds(null); }, [data]);
+
+  const displayProds = localProds ?? products;
+  const canDrag      = !debounced; // hide drag handles when searching
 
   const deleteMutation = useMutation({
     mutationFn: (p) => api.del(`/products/${p._id}`),
@@ -68,21 +85,43 @@ const AdminProducts = () => {
     onError: (e) => alert(e.message || 'Failed to deactivate'),
   });
 
-  const confirmDelete = () => {
-    if (!deleteTarget) return;
-    deleteMutation.mutate(deleteTarget);
-  };
+  const reorderMutation = useMutation({
+    mutationFn: (list) =>
+      api.put('/products/reorder', {
+        items: list.map((p, i) => ({ id: p._id, order: (page - 1) * LIMIT + i })),
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['products'] }),
+    onError:   (e) => { alert(e.message || 'Failed to save order'); setLocalProds(null); },
+  });
 
-  const priceRange = (p) => {
-    const prices = (p.variants || []).map((v) => v.retailPrice).filter((n) => n != null);
-    if (!prices.length) return '—';
-    const lo = Math.min(...prices), hi = Math.max(...prices);
-    return lo === hi ? money(lo) : `${money(lo)} – ${money(hi)}`;
+  // ── Drag handlers ────────────────────────────────────────────────────────────
+  const handleDragStart = (i) => { setDragIndex(i); setLocalProds([...displayProds]); };
+  const handleDragEnter = (i) => { if (i !== dragIndex) setOverIndex(i); };
+  const handleDrop = () => {
+    if (dragIndex === null || overIndex === null || dragIndex === overIndex) {
+      setDragIndex(null); setOverIndex(null); setLocalProds(null);
+      return;
+    }
+    const reordered = [...displayProds];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(overIndex, 0, moved);
+    setLocalProds(reordered);
+    setDragIndex(null); setOverIndex(null);
+    reorderMutation.mutate(reordered);
+  };
+  const handleDragEnd = () => { setDragIndex(null); setOverIndex(null); };
+
+  const confirmDelete = () => { if (deleteTarget) deleteMutation.mutate(deleteTarget); };
+
+  const priceStr = (arr) => {
+    if (!arr.length) return '—';
+    const lo = Math.min(...arr), hi = Math.max(...arr);
+    return lo === hi ? money(lo) : `${money(lo)}–${money(hi)}`;
   };
 
   return (
     <div>
-      <PageHeader title="Products" subtitle={`${total} product${total !== 1 ? 's' : ''}`}>
+      <PageHeader title="Products" subtitle={`${total} product${total !== 1 ? 's' : ''}${canDrag ? ' · drag to reorder' : ''}`}>
         <button
           onClick={() => navigate('/admin/products/new')}
           className="flex items-center gap-2 h-10 px-4 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer"
@@ -102,9 +141,13 @@ const AdminProducts = () => {
         />
       </div>
 
+      {reorderMutation.isPending && (
+        <p className="font-lato text-[12px] text-brand-green mb-3">Saving new order…</p>
+      )}
+
       {loading ? (
         <Spinner />
-      ) : products.length === 0 ? (
+      ) : displayProds.length === 0 ? (
         <Card>
           <EmptyState icon={Package} title="No products found" subtitle="Add your first product or try a different search." />
         </Card>
@@ -114,6 +157,7 @@ const AdminProducts = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#f0f0f0] text-left">
+                  {canDrag && <th className="font-lato text-[11px] uppercase tracking-[1px] text-[#aaa] w-10 px-3 py-3" />}
                   <th className="font-lato text-[11px] uppercase tracking-[1px] text-[#aaa] px-5 py-3">Product</th>
                   <th className="font-lato text-[11px] uppercase tracking-[1px] text-[#aaa] px-3 py-3">Category</th>
                   <th className="font-lato text-[11px] uppercase tracking-[1px] text-[#aaa] px-3 py-3">Retail</th>
@@ -124,17 +168,33 @@ const AdminProducts = () => {
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => {
+                {displayProds.map((p, idx) => {
                   const retails    = (p.variants || []).map((v) => v.retailPrice).filter((n) => n != null);
                   const wholesales = (p.variants || []).map((v) => v.wholesalePrice).filter((n) => n != null);
-                  const priceStr   = (arr) => {
-                    if (!arr.length) return '—';
-                    const lo = Math.min(...arr), hi = Math.max(...arr);
-                    return lo === hi ? money(lo) : `${money(lo)}–${money(hi)}`;
-                  };
 
                   return (
-                    <tr key={p._id} className="border-b border-[#f5f5f5] last:border-0 hover:bg-[#fafafa]">
+                    <tr
+                      key={p._id}
+                      draggable={canDrag}
+                      onDragStart={canDrag ? () => handleDragStart(idx) : undefined}
+                      onDragEnter={canDrag ? () => handleDragEnter(idx) : undefined}
+                      onDragOver={canDrag ? (e) => e.preventDefault() : undefined}
+                      onDrop={canDrag ? handleDrop : undefined}
+                      onDragEnd={canDrag ? handleDragEnd : undefined}
+                      className={[
+                        'border-b border-[#f5f5f5] last:border-0 transition-colors',
+                        canDrag && dragIndex === idx ? 'opacity-40 bg-[#f9f9f9]' : 'hover:bg-[#fafafa]',
+                        canDrag && overIndex === idx && dragIndex !== idx ? 'border-t-2 border-t-brand-green' : '',
+                      ].join(' ')}
+                    >
+                      {canDrag && (
+                        <td className="px-3 py-3 w-10">
+                          <div className="flex items-center gap-0.5 text-[#bbb] cursor-grab active:cursor-grabbing">
+                            <GripVertical size={16} />
+                          </div>
+                        </td>
+                      )}
+
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
                           {p.image
@@ -153,10 +213,10 @@ const AdminProducts = () => {
                       <td className="px-3 py-3 font-lato text-[13px] text-[#666]">{p.variants?.length || 0}</td>
                       <td className="px-3 py-3">
                         <div className="flex gap-1.5 flex-wrap">
-                          {p.isFeatured  && <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-lato text-[10px] font-bold uppercase">Featured</span>}
-                          {p.isNew       && <span className="px-2 py-0.5 rounded bg-brand-green/15 text-brand-green font-lato text-[10px] font-bold uppercase">New</span>}
-                          {p.isSale      && <span className="px-2 py-0.5 rounded bg-gold/20 text-[#9a7a25] font-lato text-[10px] font-bold uppercase">Sale</span>}
-                          {!p.isStocked  && <span className="px-2 py-0.5 rounded bg-red-100 text-red-600 font-lato text-[10px] font-bold uppercase">Out of Stock</span>}
+                          {p.isFeatured && <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-lato text-[10px] font-bold uppercase">Featured</span>}
+                          {p.isNew      && <span className="px-2 py-0.5 rounded bg-brand-green/15 text-brand-green font-lato text-[10px] font-bold uppercase">New</span>}
+                          {p.isSale     && <span className="px-2 py-0.5 rounded bg-gold/20 text-[#9a7a25] font-lato text-[10px] font-bold uppercase">Sale</span>}
+                          {!p.isStocked && <span className="px-2 py-0.5 rounded bg-red-100 text-red-600 font-lato text-[10px] font-bold uppercase">Out of Stock</span>}
                         </div>
                       </td>
                       <td className="px-5 py-3">

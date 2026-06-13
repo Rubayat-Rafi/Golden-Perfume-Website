@@ -20,6 +20,22 @@ export const protect = async (req, res, next) => {
   }
 };
 
+// Optional auth — attaches req.user if a valid token is present, otherwise continues as guest.
+// Use on public routes that need to personalise the response (e.g. wholesale price visibility).
+export const optionalAuth = async (req, _res, next) => {
+  const header = req.headers.authorization;
+  if (!header?.startsWith('Bearer ')) return next();
+  const token = header.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    const user = await User.findById(decoded.id).select('role permissions');
+    if (user) req.user = user;
+  } catch {
+    // invalid / expired token — treat as guest
+  }
+  next();
+};
+
 // Role guard — use after protect()
 // Usage: requireRole('admin') or requireRole('wholesale', 'admin')
 export const requireRole = (...roles) => (req, res, next) => {

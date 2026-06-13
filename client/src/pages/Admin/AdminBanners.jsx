@@ -14,7 +14,6 @@ const CreateModal = ({ onClose, onCreated }) => {
   const [preview, setPreview] = useState('');
   const [link,    setLink]    = useState('');
   const [title,   setTitle]   = useState('');
-  const [order,   setOrder]   = useState('');
   const [err,     setErr]     = useState('');
   const [busy,    setBusy]    = useState(false);
   const fileRef = useRef(null);
@@ -34,7 +33,6 @@ const CreateModal = ({ onClose, onCreated }) => {
       fd.append('image', file);
       fd.append('link',  link);
       fd.append('title', title);
-      fd.append('order', order || '0');
       await api.upload('/banners', fd);
       onCreated();
     } catch (e) {
@@ -71,7 +69,7 @@ const CreateModal = ({ onClose, onCreated }) => {
                 <div className="h-40 flex flex-col items-center justify-center text-[#aaa] gap-2">
                   <UploadCloud size={28} />
                   <span className="font-lato text-[13px]">Click to choose an image</span>
-                  <span className="font-lato text-[11px] text-[#bbb]">Recommended: 1440×560px · JPEG/PNG/WEBP · max 5 MB</span>
+                  <span className="font-lato text-[11px] text-[#bbb]">Recommended Size: 1920 × 700 px (Aspect Ratio ~2.74:1) · JPEG/PNG/WEBP · max 5 MB</span>
                 </div>
               )}
             </button>
@@ -81,15 +79,9 @@ const CreateModal = ({ onClose, onCreated }) => {
             <label className={labelCls}>Link (where the banner sends users)</label>
             <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="/shop  or  https://example.com" className={inputCls} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Title (optional)</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Alt text" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Order</label>
-              <input type="number" value={order} onChange={(e) => setOrder(e.target.value)} placeholder="0" className={inputCls} />
-            </div>
+          <div>
+            <label className={labelCls}>Title (optional)</label>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Alt text" className={inputCls} />
           </div>
         </div>
 
@@ -113,7 +105,6 @@ const EditModal = ({ banner, onClose, onSaved }) => {
   const [preview, setPreview] = useState(banner.image);
   const [link,    setLink]    = useState(banner.link   || '');
   const [title,   setTitle]   = useState(banner.title  || '');
-  const [order,   setOrder]   = useState(String(banner.order ?? 0));
   const [err,     setErr]     = useState('');
   const [busy,    setBusy]    = useState(false);
   const fileRef = useRef(null);
@@ -132,7 +123,6 @@ const EditModal = ({ banner, onClose, onSaved }) => {
       if (file) fd.append('image', file);
       fd.append('link',  link);
       fd.append('title', title);
-      fd.append('order', order || '0');
       await api.upload(`/banners/${banner._id}`, fd, 'PUT');
       onSaved();
     } catch (e) {
@@ -165,22 +155,16 @@ const EditModal = ({ banner, onClose, onSaved }) => {
             >
               <img src={preview} alt="banner preview" className="w-full h-40 object-cover" />
             </button>
-            <p className="font-lato text-[11px] text-[#bbb] mt-1.5">Recommended: 1440×560px · JPEG/PNG/WEBP · max 5 MB</p>
+            <p className="font-lato text-[11px] text-[#bbb] mt-1.5">Recommended Size: 1920 × 700 px (Aspect Ratio ~2.74:1) · JPEG/PNG/WEBP · max 5 MB</p>
           </div>
 
           <div>
             <label className={labelCls}>Link</label>
             <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="/shop  or  https://example.com" className={inputCls} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Title (optional)</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Alt text" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Order</label>
-              <input type="number" value={order} onChange={(e) => setOrder(e.target.value)} placeholder="0" className={inputCls} />
-            </div>
+          <div>
+            <label className={labelCls}>Title (optional)</label>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Alt text" className={inputCls} />
           </div>
         </div>
 

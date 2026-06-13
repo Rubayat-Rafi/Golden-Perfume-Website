@@ -5,19 +5,21 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  reorderProducts,
 } from '../controllers/productController.js';
-import { protect, requirePermission } from '../middleware/protect.js';
+import { protect, optionalAuth, requirePermission } from '../middleware/protect.js';
 import { uploadProduct } from '../middleware/upload.js';
 
 const router = Router();
 
-// Public — price projection is applied inside controller based on req.user
-router.get('/',      getProducts);
-router.get('/:slug', getProductBySlug);
+// Public — optionalAuth lets wholesale/admin users receive wholesalePrice in the response
+router.get('/',      optionalAuth, getProducts);
+router.get('/:slug', optionalAuth, getProductBySlug);
 
 // Admin / permitted staff
-router.post('/',      protect, requirePermission('products'), uploadProduct, createProduct);
-router.put('/:id',    protect, requirePermission('products'), uploadProduct, updateProduct);
-router.delete('/:id', protect, requirePermission('products'), deleteProduct);
+router.post('/',          protect, requirePermission('products'), uploadProduct, createProduct);
+router.put('/reorder',    protect, requirePermission('products'), reorderProducts); // before /:id
+router.put('/:id',        protect, requirePermission('products'), uploadProduct, updateProduct);
+router.delete('/:id',     protect, requirePermission('products'), deleteProduct);
 
 export default router;
