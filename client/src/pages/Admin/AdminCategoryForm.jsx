@@ -4,7 +4,7 @@ import { ArrowLeft, UploadCloud, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useCategories } from '../../hooks/queries';
-import { PageHeader, Card, Spinner } from './adminUI';
+import { PageHeader, Card, FormSkeleton } from './adminUI';
 
 const slugify = (s) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
@@ -41,8 +41,10 @@ const AdminCategoryForm = () => {
   const [isActive, setIsActive]       = useState(true);
   const [gender, setGender]           = useState([]);
 
-  const [imageFile, setImageFile]     = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
+  const [imageFile, setImageFile]         = useState(null);
+  const [imagePreview, setImagePreview]   = useState('');
+  const [seoTitle,       setSeoTitle]       = useState('');
+  const [seoDescription, setSeoDescription] = useState('');
 
   useEffect(() => {
     if (!isEdit || !allCats.length || populated.current) return;
@@ -56,6 +58,8 @@ const AdminCategoryForm = () => {
     setOrder(cat.order ?? 0);
     setIsActive(cat.isActive ?? true);
     setGender(cat.gender || []);
+    setSeoTitle(cat.seoTitle || '');
+    setSeoDescription(cat.seoDescription || '');
     if (cat.image) setImagePreview(cat.image);
   }, [allCats, id, isEdit]);
 
@@ -95,8 +99,10 @@ const AdminCategoryForm = () => {
       fd.append('slug', slug.trim());
       fd.append('parent', parent);
       fd.append('order', String(Number(order) || 0));
-      fd.append('isActive', String(isActive));
-      fd.append('gender', JSON.stringify(gender));
+      fd.append('isActive',        String(isActive));
+      fd.append('gender',          JSON.stringify(gender));
+      fd.append('seoTitle',        seoTitle.trim());
+      fd.append('seoDescription',  seoDescription.trim());
 
       if (imageFile) {
         fd.append('image', imageFile);
@@ -117,7 +123,7 @@ const AdminCategoryForm = () => {
     }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <FormSkeleton />;
 
   return (
     <div>
@@ -233,6 +239,31 @@ const AdminCategoryForm = () => {
               ))}
             </div>
           </div>}
+
+          {/* SEO */}
+          <div>
+            <label className={labelCls}>SEO Title <span className="font-normal text-[#bbb]">(optional)</span></label>
+            <input
+              value={seoTitle}
+              onChange={(e) => setSeoTitle(e.target.value)}
+              placeholder="e.g. Body Oils – Natural Fragrance | Golden Perfume"
+              maxLength={70}
+              className={inputCls}
+            />
+            <p className="font-lato text-[11px] text-[#aaa] mt-1">{seoTitle.length}/70 characters</p>
+          </div>
+          <div>
+            <label className={labelCls}>Meta Description <span className="font-normal text-[#bbb]">(optional)</span></label>
+            <textarea
+              value={seoDescription}
+              onChange={(e) => setSeoDescription(e.target.value)}
+              placeholder="Brief description for search engines…"
+              maxLength={160}
+              rows={2}
+              className={`${inputCls} h-auto py-2.5 resize-none`}
+            />
+            <p className="font-lato text-[11px] text-[#aaa] mt-1">{seoDescription.length}/160 characters</p>
+          </div>
 
           {/* Status */}
           <div>

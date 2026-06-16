@@ -4,7 +4,7 @@ import { ShieldCheck, Plus, X, Trash2, Eye, EyeOff, Check, ChevronLeft, ChevronR
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useAdminStaff } from '../../hooks/queries';
-import { formatDate, formatDateTime, PageHeader, Card, Spinner, EmptyState } from './adminUI';
+import { formatDate, formatDateTime, PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 
 // Assignable admin sections (must match backend STAFF_SECTIONS + admin nav)
 export const SECTIONS = [
@@ -270,7 +270,7 @@ const AdminStaff = () => {
         </button>
       </PageHeader>
 
-      {loading ? <Spinner /> : team.length === 0 ? (
+      {loading ? <TableSkeleton cols={5} /> : team.length === 0 ? (
         <Card><EmptyState icon={ShieldCheck} title="No team members" subtitle="Create your first staff account." /></Card>
       ) : (
         <Card className="overflow-hidden">

@@ -56,6 +56,122 @@ export const Spinner = () => (
   </div>
 );
 
+// ── Skeleton loaders ───────────────────────────────────────────────────────────
+
+// Base shimmer block — compose with width/height/shape classes
+export const Skeleton = ({ className = '' }) => (
+  <div className={`bg-[#e9ebec] rounded animate-pulse ${className}`} />
+);
+
+// Matches the Card-wrapped tables used across every admin list page
+export const TableSkeleton = ({ rows = 8, cols = 5 }) => (
+  <Card className="overflow-hidden">
+    {/* Header row */}
+    <div className="flex items-center gap-4 px-5 py-3.5 border-b border-[#f0f0f0]">
+      {Array.from({ length: cols }).map((_, i) => (
+        <Skeleton key={i} className={`h-2.5 ${i === 0 ? 'w-28' : 'flex-1 max-w-20'}`} />
+      ))}
+    </div>
+    {/* Body rows */}
+    {Array.from({ length: rows }).map((_, r) => (
+      <div key={r} className="flex items-center gap-4 px-5 py-4 border-b border-[#f5f5f5] last:border-0">
+        {Array.from({ length: cols }).map((_, c) =>
+          c === 0 ? (
+            <div key={c} className="flex items-center gap-3 w-28">
+              <Skeleton className="w-9 h-9 rounded-full shrink-0" />
+              <div className="flex-1 flex flex-col gap-1.5">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-2 w-2/3" />
+              </div>
+            </div>
+          ) : (
+            <Skeleton key={c} className="h-3 flex-1 max-w-20" />
+          )
+        )}
+      </div>
+    ))}
+  </Card>
+);
+
+// Stacked content cards (e.g. reviews list)
+export const CardListSkeleton = ({ rows = 4 }) => (
+  <div className="flex flex-col gap-3">
+    {Array.from({ length: rows }).map((_, i) => (
+      <Card key={i} className="p-5 flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-9 h-9 rounded-full shrink-0" />
+          <div className="flex flex-col gap-1.5">
+            <Skeleton className="h-3 w-32" />
+            <Skeleton className="h-2.5 w-24" />
+          </div>
+        </div>
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-4/5" />
+      </Card>
+    ))}
+  </div>
+);
+
+// Dashboard — KPI grid + content blocks
+export const DashboardSkeleton = () => (
+  <div>
+    <div className="mb-6">
+      <Skeleton className="h-7 w-48 mb-2" />
+      <Skeleton className="h-3 w-64" />
+    </div>
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {Array.from({ length: 7 }).map((_, i) => (
+        <Card key={i} className="p-5">
+          <Skeleton className="w-10 h-10 rounded-lg mb-3" />
+          <Skeleton className="h-6 w-20 mb-2" />
+          <Skeleton className="h-2.5 w-24" />
+        </Card>
+      ))}
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Card className="lg:col-span-2 p-5">
+        <Skeleton className="h-4 w-40 mb-5" />
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 py-3 border-b border-[#f5f5f5] last:border-0">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 flex-1 max-w-32" />
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+        ))}
+      </Card>
+      <Card className="p-5">
+        <Skeleton className="h-4 w-40 mb-5" />
+        <Skeleton className="h-3 w-full mb-2" />
+        <Skeleton className="h-2 w-full mb-5 rounded-full" />
+        <Skeleton className="h-3 w-full mb-2" />
+        <Skeleton className="h-2 w-full mb-6 rounded-full" />
+        <Skeleton className="h-6 w-28 mt-6" />
+      </Card>
+    </div>
+  </div>
+);
+
+// Edit/create forms (product, category)
+export const FormSkeleton = () => (
+  <div className="max-w-3xl">
+    <Skeleton className="h-7 w-56 mb-6" />
+    <Card className="p-6 mb-5">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="mb-5 last:mb-0">
+          <Skeleton className="h-2.5 w-24 mb-2" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+        </div>
+      ))}
+    </Card>
+    <Card className="p-6">
+      <Skeleton className="h-4 w-40 mb-5" />
+      <Skeleton className="h-24 w-full rounded-lg" />
+    </Card>
+  </div>
+);
+
 export const EmptyState = ({ icon: Icon, title, subtitle }) => (
   <div className="flex flex-col items-center justify-center py-20 text-center">
     {Icon && (

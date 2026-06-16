@@ -1,4 +1,5 @@
 import Category from '../models/Category.js';
+import { deleteFile } from '../utils/deleteFile.js';
 
 // Resolve a category slug + all of its descendant slugs (any depth).
 // Used by the product filter so selecting a parent shows everything beneath it.
@@ -107,9 +108,11 @@ export const updateCategory = async (req, res, next) => {
         return res.status(400).json({ success: false, message: 'Cannot move a category under one of its own sub-categories' });
     }
 
-    const image = req.file
-      ? `/uploads/categories/${req.file.filename}`
-      : (req.body.image !== undefined ? req.body.image : current.image);
+    let image = req.body.image !== undefined ? req.body.image : current.image;
+    if (req.file) {
+      deleteFile(current.image);
+      image = `/uploads/categories/${req.file.filename}`;
+    }
 
     const isActive = req.body.isActive !== undefined
       ? req.body.isActive !== 'false' && req.body.isActive !== false
@@ -120,7 +123,14 @@ export const updateCategory = async (req, res, next) => {
       try { gender = JSON.parse(req.body.gender); } catch { gender = []; }
     }
 
-    const update = { name, slug, image, order: Number(req.body.order) || 0, isActive, gender };
+    const update = {
+      name, slug, image,
+      order:          Number(req.body.order) || 0,
+      isActive,
+      gender,
+      seoTitle:       req.body.seoTitle       ?? current.seoTitle,
+      seoDescription: req.body.seoDescription ?? current.seoDescription,
+    };
     if (parent !== undefined) update.parent = parent;
 
     const category = await Category.findByIdAndUpdate(

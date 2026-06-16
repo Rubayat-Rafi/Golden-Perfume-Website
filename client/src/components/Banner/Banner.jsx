@@ -35,7 +35,7 @@ const BannerCarousel = ({ banners }) => {
   }, [next, count]);
 
   return (
-    <section className="relative overflow-hidden bg-dark-green group w-full aspect-96/35 min-h-30">
+    <section className="relative overflow-hidden bg-dark-green/10 group w-full aspect-96/35 min-h-30">
       <div
         className="flex h-full transition-transform duration-700 ease-in-out"
         style={{ transform: `translateX(-${slide * 100}%)` }}

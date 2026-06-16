@@ -9,7 +9,9 @@ const categorySchema = new mongoose.Schema(
     image:    { type: String, default: '' },
     order:    { type: Number, default: 0 },     // controls display sort order
     isActive: { type: Boolean, default: true },
-    gender:   { type: [String], enum: ['male', 'female', 'all'], default: [] },
+    gender:         { type: [String], enum: ['male', 'female', 'all'], default: [] },
+    seoTitle:       { type: String, default: '' },
+    seoDescription: { type: String, default: '' },
   },
   { timestamps: true }
 );

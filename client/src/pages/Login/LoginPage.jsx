@@ -79,13 +79,6 @@ const LoginPage = () => {
             Sign in to your Golden Perfume account
           </p>
 
-          {/* Dev hint */}
-          <div className="bg-linen/60 border border-linen rounded-lg px-4 py-3 mb-6 font-lato text-[12px] text-[#999] leading-relaxed">
-            <span className="font-bold text-[#777]">Dev accounts:</span>
-            {' '}customer@test.com · wholesale@test.com · staff@test.com · admin@test.com
-            {' '}(any password)
-          </div>
-
           {/* Error */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 font-lato text-[13px] rounded-lg px-4 py-3 mb-6">

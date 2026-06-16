@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Package, Search, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, X, GripVertical } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useProducts } from '../../hooks/queries';
-import { money, PageHeader, Card, Spinner, EmptyState } from './adminUI';
+import { money, PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 
 const LIMIT = 15;
 
@@ -146,7 +146,7 @@ const AdminProducts = () => {
       )}
 
       {loading ? (
-        <Spinner />
+        <TableSkeleton cols={7} />
       ) : displayProds.length === 0 ? (
         <Card>
           <EmptyState icon={Package} title="No products found" subtitle="Add your first product or try a different search." />

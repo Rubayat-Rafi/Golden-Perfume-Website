@@ -1,5 +1,6 @@
 import Product from '../models/Product.js';
 import { getDescendantSlugs } from './categoryController.js';
+import { deleteFile } from '../utils/deleteFile.js';
 
 // Strip wholesalePrice from every variant when user is not wholesale/admin
 const isWholesaleUser = (req) =>
@@ -104,6 +105,18 @@ export const getProductBySlug = async (req, res, next) => {
   }
 };
 
+// ─── GET /api/products/admin/:id ──────────────────────────────────────────
+// Admin — fetch a single product by MongoDB _id (for edit form)
+export const getProductById = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+    res.json({ success: true, data: product });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── POST /api/products ────────────────────────────────────────────────────
 // Admin only — create product
 const parseBool  = (v, fallback = false) => v === undefined ? fallback : v !== 'false' && v !== false;
@@ -138,11 +151,13 @@ export const createProduct = async (req, res, next) => {
       content:      content || '',
       image,
       imageGallery,
-      isFeatured:  parseBool(req.body.isFeatured, false),
-      isNew:       parseBool(req.body.isNew, false),
-      isSale:      parseBool(req.body.isSale, false),
-      isStocked:   parseBool(req.body.isStocked, true),
-      variants:    parseJSON(req.body.variants),
+      isFeatured:     parseBool(req.body.isFeatured, false),
+      isNew:          parseBool(req.body.isNew, false),
+      isSale:         parseBool(req.body.isSale, false),
+      isStocked:      parseBool(req.body.isStocked, true),
+      variants:       parseJSON(req.body.variants),
+      seoTitle:       req.body.seoTitle       || '',
+      seoDescription: req.body.seoDescription || '',
     });
 
     res.status(201).json({ success: true, data: product });
@@ -172,14 +187,20 @@ export const updateProduct = async (req, res, next) => {
     if (!current) return res.status(404).json({ success: false, message: 'Product not found' });
 
     const { mainFile, galleryFiles } = resolveFiles(req);
-    const image = mainFile
-      ? `/uploads/products/${mainFile.filename}`
-      : (req.body.image !== undefined ? req.body.image : current.image);
 
-    // Gallery: kept existing URLs + newly uploaded files
+    let image = req.body.image !== undefined ? req.body.image : current.image;
+    if (mainFile) {
+      deleteFile(current.image);
+      image = `/uploads/products/${mainFile.filename}`;
+    }
+
+    // Gallery: kept existing URLs + newly uploaded files; delete any removed ones
     const existingGallery = parseJSON(req.body.existingGallery, current.imageGallery || []);
-    const newGalleryUrls  = galleryFiles.map((f) => `/uploads/products/${f.filename}`);
-    const imageGallery    = [...existingGallery, ...newGalleryUrls];
+    (current.imageGallery || [])
+      .filter((url) => !existingGallery.includes(url))
+      .forEach(deleteFile);
+    const newGalleryUrls = galleryFiles.map((f) => `/uploads/products/${f.filename}`);
+    const imageGallery   = [...existingGallery, ...newGalleryUrls];
 
     const update = {
       productNumber: req.body.productNumber ?? current.productNumber,
@@ -197,7 +218,9 @@ export const updateProduct = async (req, res, next) => {
       isSale:        req.body.isSale      !== undefined ? parseBool(req.body.isSale)            : current.isSale,
       isStocked:     req.body.isStocked   !== undefined ? parseBool(req.body.isStocked, true)   : current.isStocked,
       isActive:      req.body.isActive    !== undefined ? parseBool(req.body.isActive, true)    : current.isActive,
-      variants:      req.body.variants    !== undefined ? parseJSON(req.body.variants)          : current.variants,
+      variants:       req.body.variants       !== undefined ? parseJSON(req.body.variants) : current.variants,
+      seoTitle:       req.body.seoTitle       ?? current.seoTitle,
+      seoDescription: req.body.seoDescription ?? current.seoDescription,
     };
 
     const product = await Product.findByIdAndUpdate(

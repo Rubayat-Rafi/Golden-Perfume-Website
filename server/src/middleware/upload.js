@@ -73,3 +73,22 @@ export const uploadProduct = multer({
   { name: 'image',        maxCount: 1  },
   { name: 'imageGallery', maxCount: 10 },
 ]);
+
+// ── Review images ─────────────────────────────────────────────────────────────
+
+const REVIEW_DIR = path.join(__dirname, '../../uploads/reviews');
+fs.mkdirSync(REVIEW_DIR, { recursive: true });
+
+const reviewStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, REVIEW_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `review-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+  },
+});
+
+export const uploadReview = multer({
+  storage: reviewStorage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+}).array('images', 5);

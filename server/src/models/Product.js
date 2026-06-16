@@ -11,6 +11,7 @@ const reviewSchema = new mongoose.Schema({
 const variantSchema = new mongoose.Schema({
   sku:            { type: String, required: true },
   size:           { type: String, required: true },
+  color:          { type: String, default: '' },
   retailPrice:    { type: Number, required: true, min: 0 },
   wholesalePrice: { type: Number, default: 0, min: 0 },
   weight:         { type: String, default: '' },
@@ -42,6 +43,9 @@ const productSchema = new mongoose.Schema(
     isStocked:  { type: Boolean, default: true },
 
     order:    { type: Number, default: 0, index: true },
+
+    seoTitle:       { type: String, default: '' },
+    seoDescription: { type: String, default: '' },
 
     tags:     { type: [String], default: [] },
     variants: { type: [variantSchema], default: [] },

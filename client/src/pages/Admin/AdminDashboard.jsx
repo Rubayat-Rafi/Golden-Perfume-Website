@@ -3,7 +3,7 @@ import {
   DollarSign, ShoppingBag, Briefcase, Package, Users, Mail, TrendingUp,
 } from 'lucide-react';
 import { useAdminStats } from '../../hooks/queries';
-import { money, formatDate, StatusBadge, ChannelBadge, PageHeader, Card, Spinner } from './adminUI';
+import { money, formatDate, StatusBadge, ChannelBadge, PageHeader, Card, DashboardSkeleton } from './adminUI';
 
 const KpiCard = ({ icon: Icon, label, value, accent, to }) => {
   const inner = (
@@ -23,7 +23,7 @@ const KpiCard = ({ icon: Icon, label, value, accent, to }) => {
 const AdminDashboard = () => {
   const { data, isLoading: loading } = useAdminStats();
 
-  if (loading) return <Spinner />;
+  if (loading) return <DashboardSkeleton />;
   if (!data) return <p className="font-lato text-[#999]">Failed to load dashboard.</p>;
 
   const { kpis, channels, recentOrders } = data;

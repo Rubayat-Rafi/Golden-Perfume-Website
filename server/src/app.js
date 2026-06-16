@@ -14,6 +14,8 @@ import promoRoutes from './routes/promoRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import bannerRoutes from './routes/bannerRoutes.js';
+import newsletterRoutes from './routes/newsletterRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProd = process.env.NODE_ENV === 'production';
@@ -59,6 +61,8 @@ app.use('/api/promo',      promoRoutes);
 app.use('/api/contact',    contactRoutes);
 app.use('/api/admin',      adminRoutes);
 app.use('/api/banners',    bannerRoutes);
+app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/reviews',    reviewRoutes);
 
 // ── Global error handler (must be last) ──────────────────────────────────────
 app.use(errorHandler);

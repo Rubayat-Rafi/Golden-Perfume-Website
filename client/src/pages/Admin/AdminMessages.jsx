@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Eye, Trash2, Mail, MailOpen, X } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useContactMessages } from '../../hooks/queries';
-import { formatDateTime, PageHeader, Card, Spinner, EmptyState } from './adminUI';
+import { formatDateTime, PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 
 const PAGE_SIZE = 15;
 
@@ -137,7 +137,7 @@ const AdminMessages = () => {
       </PageHeader>
 
       {loading ? (
-        <Spinner />
+        <TableSkeleton cols={6} />
       ) : messages.length === 0 ? (
         <Card>
           <EmptyState icon={Mail} title="No messages" subtitle="Contact form submissions will appear here." />

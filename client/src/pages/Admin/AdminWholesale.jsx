@@ -4,7 +4,7 @@ import { Briefcase, X, Eye, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useWholesaleApplications } from '../../hooks/queries';
-import { formatDate, StatusBadge, PageHeader, Card, Spinner, EmptyState } from './adminUI';
+import { formatDate, StatusBadge, PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 
 const STATUSES = ['pending', 'approved', 'rejected'];
 
@@ -163,7 +163,7 @@ const AdminWholesale = () => {
         ))}
       </div>
 
-      {loading ? <Spinner /> : filtered.length === 0 ? (
+      {loading ? <TableSkeleton cols={6} /> : filtered.length === 0 ? (
         <Card><EmptyState icon={Briefcase} title="No applications" subtitle="Applications matching this filter will appear here." /></Card>
       ) : (
         <Card className="overflow-hidden">

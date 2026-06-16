@@ -3,8 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, UploadCloud, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
+import axiosSecure from '../../lib/axiosSecure';
 import { useCategories } from '../../hooks/queries';
-import { PageHeader, Card, Spinner } from './adminUI';
+import { PageHeader, Card, FormSkeleton } from './adminUI';
 import RichEditor from '../../components/RichEditor/RichEditor';
 
 const slugify = (s) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -13,7 +14,7 @@ const genNum  = () => `GP-${Math.floor(100000 + Math.random() * 900000)}`;
 const inputCls = 'w-full h-10 px-3 border border-[#ddd] rounded-lg font-lato text-[13px] outline-none focus:border-brand-green transition-colors';
 const labelCls = 'block font-lato text-[12px] text-[#666] mb-1.5';
 
-const blankVariant = () => ({ sku: '', size: '', retailPrice: '', wholesalePrice: '', inStock: true, stockQty: '' });
+const blankVariant = () => ({ sku: '', size: '', color: '', retailPrice: '', wholesalePrice: '', inStock: true, stockQty: '' });
 
 const AdminProductForm = () => {
   const { id }   = useParams();
@@ -62,6 +63,10 @@ const AdminProductForm = () => {
   const [galleryFiles, setGalleryFiles] = useState([]); // new File objects + blob previews
   // galleryFiles entries: { file: File, preview: string }
 
+  // SEO
+  const [seoTitle,       setSeoTitle]       = useState('');
+  const [seoDescription, setSeoDescription] = useState('');
+
   // Variants
   const [variants, setVariants] = useState([blankVariant()]);
 
@@ -70,8 +75,8 @@ const AdminProductForm = () => {
     let active = true;
     (async () => {
       try {
-        const listRes = await api.get('/products?limit=500');
-        const product = (listRes.data || []).find((p) => p._id === id);
+        const res = await axiosSecure.get(`/products/admin/${id}`);
+        const product = res.data?.data;
         if (product && active) {
           setPNum(product.productNumber || genNum());
           setName(product.name || '');
@@ -94,12 +99,15 @@ const AdminProductForm = () => {
             setTopCatSlug(product.categorySlug || '');
             setSubCatSlug('');
           }
+          setSeoTitle(product.seoTitle || '');
+          setSeoDescription(product.seoDescription || '');
           if (product.image)               setMainImgPreview(product.image);
           if (product.imageGallery?.length) setGalleryUrls(product.imageGallery);
           if (product.variants?.length) {
             setVariants(product.variants.map((v) => ({
               sku:            v.sku            ?? '',
               size:           v.size           ?? '',
+              color:          v.color          ?? '',
               retailPrice:    v.retailPrice    ?? '',
               wholesalePrice: v.wholesalePrice ?? '',
               inStock:        v.inStock        !== false,
@@ -171,15 +179,18 @@ const AdminProductForm = () => {
       fd.append('gender',       gender);
       fd.append('description',  shortDesc);
       fd.append('content',      fullDesc);
-      fd.append('isFeatured',   String(isFeatured));
-      fd.append('isNew',        String(isNew));
-      fd.append('isSale',       String(isSale));
-      fd.append('isStocked',    String(isStocked));
-      fd.append('isActive',     String(isActive));
+      fd.append('isFeatured',      String(isFeatured));
+      fd.append('isNew',           String(isNew));
+      fd.append('isSale',          String(isSale));
+      fd.append('isStocked',       String(isStocked));
+      fd.append('isActive',        String(isActive));
+      fd.append('seoTitle',        seoTitle.trim());
+      fd.append('seoDescription',  seoDescription.trim());
       fd.append('variants', JSON.stringify(
         variants.map((v) => ({
           sku:            v.sku,
           size:           v.size,
+          color:          v.color?.trim() || '',
           retailPrice:    Number(v.retailPrice)    || 0,
           wholesalePrice: Number(v.wholesalePrice) || 0,
           inStock:        v.inStock,
@@ -213,7 +224,7 @@ const AdminProductForm = () => {
 
   const totalGallery = galleryUrls.length + galleryFiles.length;
 
-  if (loading) return <Spinner />;
+  if (loading) return <FormSkeleton />;
 
   return (
     <div>
@@ -475,13 +486,22 @@ const AdminProductForm = () => {
 
                     <p className="font-lato text-[11px] uppercase tracking-[1px] text-[#bbb]">Variant {i + 1}</p>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                       <div>
                         <label className={labelCls}>Label / Size</label>
                         <input
                           value={v.size}
                           onChange={(e) => setVf(i, 'size', e.target.value)}
                           placeholder="e.g. 1 oz, 100ml, Small"
+                          className={inputCls}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Color <span className="text-[#bbb] font-normal">(optional)</span></label>
+                        <input
+                          value={v.color}
+                          onChange={(e) => setVf(i, 'color', e.target.value)}
+                          placeholder="e.g. Red, Ocean Blue"
                           className={inputCls}
                         />
                       </div>
@@ -577,6 +597,39 @@ const AdminProductForm = () => {
                 </button>
               </div>
             ))}
+          </div>
+        </Card>
+
+        {/* ── SEO ── */}
+        <Card>
+          <div className="px-6 py-4 border-b border-[#f0f0f0]">
+            <h2 className="font-playfair text-[16px] text-dark-green">SEO</h2>
+            <p className="font-lato text-[12px] text-[#aaa] mt-0.5">Controls title tag and meta description shown in search results</p>
+          </div>
+          <div className="p-6 flex flex-col gap-4">
+            <div>
+              <label className={labelCls}>SEO Title <span className="text-[#bbb] font-normal">(defaults to product name)</span></label>
+              <input
+                value={seoTitle}
+                onChange={(e) => setSeoTitle(e.target.value)}
+                placeholder="e.g. Rose Body Oil – Natural Fragrance | Golden Perfume"
+                maxLength={70}
+                className={inputCls}
+              />
+              <p className="font-lato text-[11px] text-[#aaa] mt-1">{seoTitle.length}/70 characters</p>
+            </div>
+            <div>
+              <label className={labelCls}>Meta Description <span className="text-[#bbb] font-normal">(defaults to short description)</span></label>
+              <textarea
+                value={seoDescription}
+                onChange={(e) => setSeoDescription(e.target.value)}
+                placeholder="Brief description for search engines…"
+                maxLength={160}
+                rows={3}
+                className={`${inputCls} h-auto py-2.5 resize-none`}
+              />
+              <p className="font-lato text-[11px] text-[#aaa] mt-1">{seoDescription.length}/160 characters</p>
+            </div>
           </div>
         </Card>
 

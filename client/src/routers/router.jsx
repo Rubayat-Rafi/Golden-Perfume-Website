@@ -28,6 +28,8 @@ import AdminPromos from "../pages/Admin/AdminPromos";
 import AdminMessages from "../pages/Admin/AdminMessages";
 import AdminCategoryForm from "../pages/Admin/AdminCategoryForm";
 import AdminProductForm from "../pages/Admin/AdminProductForm";
+import AdminReviews from "../pages/Admin/AdminReviews";
+import AdminNewsletter from "../pages/Admin/AdminNewsletter";
 
 // Remounts ProductDetail (resetting all local state) when the slug changes
 const ProductDetailRoute = () => { const { id } = useParams(); return <ProductDetail key={id} />; };
@@ -122,6 +124,8 @@ export const router = createBrowserRouter([
       { path: "customers", element: <PermGuard section="customers"><AdminCustomers /></PermGuard> },
       { path: "promos",    element: <PermGuard section="promos"><AdminPromos /></PermGuard> },
       { path: "messages",  element: <PermGuard section="messages"><AdminMessages /></PermGuard> },
+      { path: "newsletter", element: <PermGuard section="messages"><AdminNewsletter /></PermGuard> },
+      { path: "reviews",   element: <PermGuard section="products"><AdminReviews /></PermGuard> },
       { path: "staff",     element: <PermGuard adminOnly><AdminStaff /></PermGuard> },
     ],
   },

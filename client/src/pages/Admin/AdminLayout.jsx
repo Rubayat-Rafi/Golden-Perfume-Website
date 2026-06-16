@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingBag, Briefcase, Package, Users, FolderTree,
-  Ticket, Mail, LogOut, Menu, ExternalLink, Image as ImageIcon, ShieldCheck,
+  Ticket, Mail, LogOut, Menu, ExternalLink, Image as ImageIcon, ShieldCheck, Star, Send,
 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
@@ -19,6 +19,8 @@ const NAV = [
   { to: '/admin/customers',  label: 'Customers',      icon: Users,           perm: 'customers' },
   { to: '/admin/promos',     label: 'Promo Codes',    icon: Ticket,          perm: 'promos' },
   { to: '/admin/messages',   label: 'Messages',       icon: Mail,            perm: 'messages',  badgeKey: 'unreadMessages' },
+  { to: '/admin/newsletter', label: 'Newsletter',     icon: Send,            perm: 'messages' },
+  { to: '/admin/reviews',    label: 'Reviews',        icon: Star,            perm: 'products' },
   { to: '/admin/staff',      label: 'Staff & Admins', icon: ShieldCheck,     adminOnly: true },
 ];
 

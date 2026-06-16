@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getProducts,
   getProductBySlug,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -17,6 +18,7 @@ router.get('/',      optionalAuth, getProducts);
 router.get('/:slug', optionalAuth, getProductBySlug);
 
 // Admin / permitted staff
+router.get('/admin/:id',  protect, requirePermission('products'), getProductById); // before /:slug
 router.post('/',          protect, requirePermission('products'), uploadProduct, createProduct);
 router.put('/reorder',    protect, requirePermission('products'), reorderProducts); // before /:id
 router.put('/:id',        protect, requirePermission('products'), uploadProduct, updateProduct);

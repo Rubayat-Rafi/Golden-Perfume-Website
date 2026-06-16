@@ -6,7 +6,9 @@ const bannerSchema = new mongoose.Schema(
     link:     { type: String, default: '' },             // "/shop" or "https://…"
     title:    { type: String, default: '' },             // alt text / admin label
     order:    { type: Number, default: 0 },
-    isActive: { type: Boolean, default: true, index: true },
+    isActive:       { type: Boolean, default: true, index: true },
+    seoTitle:       { type: String, default: '' },
+    seoDescription: { type: String, default: '' },
   },
   { timestamps: true }
 );

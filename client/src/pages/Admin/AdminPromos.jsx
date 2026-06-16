@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ticket, X, Plus } from 'lucide-react';
 import { api } from '../../lib/api';
 import { usePromos } from '../../hooks/queries';
-import { money, formatDate, PageHeader, Card, Spinner, EmptyState } from './adminUI';
+import { money, formatDate, PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 
 const inputCls = 'w-full h-10 px-3 border border-[#ddd] rounded-lg font-lato text-[13px] outline-none focus:border-brand-green';
 const labelCls = 'block font-lato text-[12px] text-[#666] mb-1.5';
@@ -119,7 +119,7 @@ const AdminPromos = () => {
         </button>
       </PageHeader>
 
-      {loading ? <Spinner /> : promos.length === 0 ? (
+      {loading ? <TableSkeleton cols={7} /> : promos.length === 0 ? (
         <Card><EmptyState icon={Ticket} title="No promo codes yet" subtitle="Create your first discount code." /></Card>
       ) : (
         <Card className="overflow-hidden">

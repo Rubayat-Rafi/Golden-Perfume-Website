@@ -1,4 +1,30 @@
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { api } from '../../lib/api';
+
 const Subscribe = () => {
+  const [email, setEmail]     = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed || !/\S+@\S+\.\S+/.test(trimmed)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await api.post('/newsletter', { email: trimmed });
+      toast.success(res.message || 'Thank you for subscribing!');
+      setEmail('');
+    } catch (err) {
+      toast.error(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section
       className="mt-4 md:mt-8 relative py-8 md:py-10 bg-cover bg-center overflow-hidden"
@@ -20,18 +46,22 @@ const Subscribe = () => {
             </p>
             <form
               className="flex flex-row gap-2"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleSubmit}
+              noValidate
             >
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your email address"
                 className="min-w-0 flex-1 h-12 px-4 font-lato text-[14px] bg-white text-dark-green outline-none placeholder:text-dark-green/40 rounded-[3px]"
               />
               <button
                 type="submit"
-                className="h-12 bg-gold text-dark-green font-lato font-bold text-[12px] uppercase tracking-[2px] px-6 rounded-[3px] hover:bg-[#c49843] transition-colors duration-300 whitespace-nowrap cursor-pointer shrink-0"
+                disabled={loading}
+                className="h-12 bg-gold text-dark-green font-lato font-bold text-[12px] uppercase tracking-[2px] px-6 rounded-[3px] hover:bg-[#c49843] transition-colors duration-300 whitespace-nowrap cursor-pointer shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Subscribe
+                {loading ? 'Subscribing…' : 'Subscribe'}
               </button>
             </form>
           </div>

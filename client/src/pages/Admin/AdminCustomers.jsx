@@ -4,7 +4,7 @@ import { Users, Search, ChevronLeft, ChevronRight, Eye, X, Mail, Phone, Calendar
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useAdminUsers, useAdminUser } from '../../hooks/queries';
-import { money, formatDate, formatDateTime, PageHeader, Card, Spinner, EmptyState } from './adminUI';
+import { money, formatDate, formatDateTime, PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 import OrderCard from '../../components/OrderCard/OrderCard';
 
 // Full customer detail slide-over
@@ -166,7 +166,7 @@ const AdminCustomers = () => {
         </div>
       </div>
 
-      {loading ? <Spinner /> : users.length === 0 ? (
+      {loading ? <TableSkeleton cols={6} /> : users.length === 0 ? (
         <Card><EmptyState icon={Users} title="No customers found" subtitle="Customers who register will appear here." /></Card>
       ) : (
         <Card className="overflow-hidden">

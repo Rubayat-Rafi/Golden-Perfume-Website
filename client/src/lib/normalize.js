@@ -30,6 +30,7 @@ export const normalizeProduct = (p) => ({
   variants: (p.variants || []).map((v) => ({
     sku:            v.sku,
     size:           v.size,
+    color:          v.color || '',
     price:          String(v.retailPrice ?? 0),
     wholesalePrice: v.wholesalePrice != null ? String(v.wholesalePrice) : undefined,
     weight:         v.weight || '',

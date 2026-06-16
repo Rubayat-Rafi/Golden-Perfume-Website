@@ -3,19 +3,21 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Image as ImageIcon, Plus, X, Trash2, ExternalLink, UploadCloud, GripVertical, Pencil } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAllBanners } from '../../hooks/queries';
-import { PageHeader, Card, Spinner, EmptyState } from './adminUI';
+import { PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 
 const inputCls = 'w-full h-10 px-3 border border-[#ddd] rounded-lg font-lato text-[13px] outline-none focus:border-brand-green';
 const labelCls = 'block font-lato text-[12px] text-[#666] mb-1.5';
 
 // ── Create modal (unchanged) ──────────────────────────────────────────────────
 const CreateModal = ({ onClose, onCreated }) => {
-  const [file,    setFile]    = useState(null);
-  const [preview, setPreview] = useState('');
-  const [link,    setLink]    = useState('');
-  const [title,   setTitle]   = useState('');
-  const [err,     setErr]     = useState('');
-  const [busy,    setBusy]    = useState(false);
+  const [file,           setFile]           = useState(null);
+  const [preview,        setPreview]        = useState('');
+  const [link,           setLink]           = useState('');
+  const [title,          setTitle]          = useState('');
+  const [seoTitle,       setSeoTitle]       = useState('');
+  const [seoDescription, setSeoDescription] = useState('');
+  const [err,            setErr]            = useState('');
+  const [busy,           setBusy]           = useState(false);
   const fileRef = useRef(null);
 
   const pick = (e) => {
@@ -30,9 +32,11 @@ const CreateModal = ({ onClose, onCreated }) => {
     setErr(''); setBusy(true);
     try {
       const fd = new FormData();
-      fd.append('image', file);
-      fd.append('link',  link);
-      fd.append('title', title);
+      fd.append('image',          file);
+      fd.append('link',           link);
+      fd.append('title',          title);
+      fd.append('seoTitle',       seoTitle.trim());
+      fd.append('seoDescription', seoDescription.trim());
       await api.upload('/banners', fd);
       onCreated();
     } catch (e) {
@@ -83,6 +87,14 @@ const CreateModal = ({ onClose, onCreated }) => {
             <label className={labelCls}>Title (optional)</label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Alt text" className={inputCls} />
           </div>
+          <div>
+            <label className={labelCls}>SEO Title <span className="font-normal text-[#bbb]">(optional)</span></label>
+            <input value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} maxLength={70} placeholder="Homepage banner – Golden Perfume" className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Meta Description <span className="font-normal text-[#bbb]">(optional)</span></label>
+            <textarea value={seoDescription} onChange={(e) => setSeoDescription(e.target.value)} maxLength={160} rows={2} placeholder="Brief description for search engines…" className={`${inputCls} h-auto py-2.5 resize-none`} />
+          </div>
         </div>
 
         <div className="px-6 py-4 border-t border-[#ececec]">
@@ -101,12 +113,14 @@ const CreateModal = ({ onClose, onCreated }) => {
 
 // ── Edit modal ────────────────────────────────────────────────────────────────
 const EditModal = ({ banner, onClose, onSaved }) => {
-  const [file,    setFile]    = useState(null);
-  const [preview, setPreview] = useState(banner.image);
-  const [link,    setLink]    = useState(banner.link   || '');
-  const [title,   setTitle]   = useState(banner.title  || '');
-  const [err,     setErr]     = useState('');
-  const [busy,    setBusy]    = useState(false);
+  const [file,           setFile]           = useState(null);
+  const [preview,        setPreview]        = useState(banner.image);
+  const [link,           setLink]           = useState(banner.link           || '');
+  const [title,          setTitle]          = useState(banner.title          || '');
+  const [seoTitle,       setSeoTitle]       = useState(banner.seoTitle       || '');
+  const [seoDescription, setSeoDescription] = useState(banner.seoDescription || '');
+  const [err,            setErr]            = useState('');
+  const [busy,           setBusy]           = useState(false);
   const fileRef = useRef(null);
 
   const pick = (e) => {
@@ -121,8 +135,10 @@ const EditModal = ({ banner, onClose, onSaved }) => {
     try {
       const fd = new FormData();
       if (file) fd.append('image', file);
-      fd.append('link',  link);
-      fd.append('title', title);
+      fd.append('link',           link);
+      fd.append('title',          title);
+      fd.append('seoTitle',       seoTitle.trim());
+      fd.append('seoDescription', seoDescription.trim());
       await api.upload(`/banners/${banner._id}`, fd, 'PUT');
       onSaved();
     } catch (e) {
@@ -165,6 +181,14 @@ const EditModal = ({ banner, onClose, onSaved }) => {
           <div>
             <label className={labelCls}>Title (optional)</label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Alt text" className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>SEO Title <span className="font-normal text-[#bbb]">(optional)</span></label>
+            <input value={seoTitle} onChange={(e) => setSeoTitle(e.target.value)} maxLength={70} placeholder="Homepage banner – Golden Perfume" className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Meta Description <span className="font-normal text-[#bbb]">(optional)</span></label>
+            <textarea value={seoDescription} onChange={(e) => setSeoDescription(e.target.value)} maxLength={160} rows={2} placeholder="Brief description for search engines…" className={`${inputCls} h-auto py-2.5 resize-none`} />
           </div>
         </div>
 
@@ -255,7 +279,7 @@ const AdminBanners = () => {
       )}
 
       {loading ? (
-        <Spinner />
+        <TableSkeleton cols={5} />
       ) : displayBanners.length === 0 ? (
         <Card>
           <EmptyState icon={ImageIcon} title="No banners yet" subtitle="Upload your first hero banner to get started." />

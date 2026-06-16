@@ -1,17 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import Banner from '../models/Banner.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const UPLOAD_ROOT = path.join(__dirname, '../../'); // server/
-
-// Delete an uploaded file from disk given its public path ("/uploads/banners/x.jpg")
-const removeFile = (publicPath) => {
-  if (!publicPath?.startsWith('/uploads/')) return;
-  const abs = path.join(UPLOAD_ROOT, publicPath.replace(/^\//, ''));
-  fs.unlink(abs, () => {}); // ignore errors (file may already be gone)
-};
+import { deleteFile } from '../utils/deleteFile.js';
 
 // ─── GET /api/banners ──────────────────────────────────────────────────────
 // Public — active banners for the hero, sorted by order
@@ -63,19 +51,21 @@ export const updateBanner = async (req, res, next) => {
   try {
     const banner = await Banner.findById(req.params.id);
     if (!banner) {
-      if (req.file) removeFile(`/uploads/banners/${req.file.filename}`);
+      if (req.file) deleteFile(`/uploads/banners/${req.file.filename}`);
       return res.status(404).json({ success: false, message: 'Banner not found' });
     }
 
     const { link, title, order, isActive } = req.body;
     if (link     !== undefined) banner.link  = String(link).trim();
-    if (title    !== undefined) banner.title = String(title).trim();
-    if (order    !== undefined) banner.order = Number(order) || 0;
-    if (isActive !== undefined) banner.isActive = isActive === true || isActive === 'true';
+    if (title          !== undefined) banner.title          = String(title).trim();
+    if (order          !== undefined) banner.order          = Number(order) || 0;
+    if (isActive       !== undefined) banner.isActive       = isActive === true || isActive === 'true';
+    if (req.body.seoTitle       !== undefined) banner.seoTitle       = String(req.body.seoTitle).trim();
+    if (req.body.seoDescription !== undefined) banner.seoDescription = String(req.body.seoDescription).trim();
 
     // Replace image if a new file was uploaded
     if (req.file) {
-      removeFile(banner.image);
+      deleteFile(banner.image);
       banner.image = `/uploads/banners/${req.file.filename}`;
     }
 
@@ -115,7 +105,7 @@ export const deleteBanner = async (req, res, next) => {
     if (!banner)
       return res.status(404).json({ success: false, message: 'Banner not found' });
 
-    removeFile(banner.image);
+    deleteFile(banner.image);
     res.json({ success: true, message: 'Banner deleted' });
   } catch (err) {
     next(err);

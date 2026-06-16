@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronRight, FolderTree, GripVertical, Plus, Pencil, Trash2, X } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useCategories } from '../../hooks/queries';
-import { PageHeader, Card, Spinner, EmptyState } from './adminUI';
+import { PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 
 const DeleteConfirm = ({ cat, onCancel, onConfirm, busy }) => (
   <>
@@ -124,7 +124,7 @@ const AdminCategories = () => {
       )}
 
       {loading ? (
-        <Spinner />
+        <TableSkeleton cols={6} />
       ) : displayTop.length === 0 ? (
         <Card>
           <EmptyState icon={FolderTree} title="No categories yet" subtitle="Create your first top-level category." />

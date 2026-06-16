@@ -128,6 +128,15 @@ export const useMyWholesaleApplication = (enabled = true) =>
     enabled,
   });
 
+// ── Reviews ───────────────────────────────────────────────────────────────────
+export const useProductReviews = (productId) =>
+  useQuery({
+    queryKey: ['reviews', productId],
+    queryFn: () => api.get(`/reviews/product/${productId}`).then((r) => r.data ?? []),
+    staleTime: 1000 * 60 * 2,
+    enabled: !!productId,
+  });
+
 // ── Contact messages ──────────────────────────────────────────────────────────
 export const useContactMessages = (params) =>
   useQuery({

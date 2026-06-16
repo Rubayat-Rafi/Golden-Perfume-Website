@@ -14,7 +14,7 @@ const SingleProduct = ({ product }) => {
   const wishlisted      = isWishlisted(id);
   const isVariable      = variants?.length > 0;
   const displayPrice    = isVariable ? variants[0].price : price;
-  const isWholesale     = role === 'wholesale' || role === 'admin';
+  const isWholesale     = role === 'wholesale';
   const wholesalePrice  = isVariable ? variants[0]?.wholesalePrice : null;
   const showWholesale   = isWholesale && wholesalePrice;
 

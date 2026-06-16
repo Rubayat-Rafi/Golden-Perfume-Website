@@ -7,7 +7,6 @@ import BrandStory from "../../components/BrandStory/BrandStory";
 import NewArrivals from "../../components/NewArrivals/NewArrivals";
 import PromoBanner from "../../components/PromoBanner/PromoBanner";
 import Testimonials from "../../components/Testimonials/Testimonials";
-import LatestNews from "../../components/LatestNews/LatestNews";
 import FAQ from "../../components/FAQ/FAQ";
 import Subscribe from "../../components/Subscribe/Subscribe";
 
@@ -15,7 +14,6 @@ const Home = () => {
   return (
     <>
       <Banner />
-      <FeatureStrip />
       <TopCategories />
       <FeaturedProducts />
       <ShopByGender />
@@ -34,8 +32,8 @@ const Home = () => {
       <PromoBanner />
       <Testimonials />
       <FAQ />
-      <LatestNews />
       <Subscribe />
+      <FeatureStrip />
     </>
   );
 };

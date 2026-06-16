@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ShoppingBag, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useOrders } from '../../hooks/queries';
-import { money, formatDateTime, StatusBadge, ChannelBadge, PageHeader, Card, Spinner, EmptyState } from './adminUI';
+import { money, formatDateTime, StatusBadge, ChannelBadge, PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 
 const FULFILLMENT = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 const PAYMENT     = ['pending', 'paid', 'refunded'];
@@ -163,7 +163,7 @@ const AdminOrders = () => {
         ))}
       </div>
 
-      {loading ? <Spinner /> : orders.length === 0 ? (
+      {loading ? <TableSkeleton cols={6} /> : orders.length === 0 ? (
         <Card><EmptyState icon={ShoppingBag} title="No orders found" subtitle="Orders will appear here once customers check out." /></Card>
       ) : (
         <Card className="overflow-hidden">

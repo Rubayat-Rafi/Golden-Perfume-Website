@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api } from '../lib/api';
+import axiosSecure from '../lib/axiosSecure';
 
 const useAdminStore = create((set) => ({
   pendingOrders:       0,
@@ -8,8 +8,8 @@ const useAdminStore = create((set) => ({
 
   fetchBadges: async () => {
     try {
-      const res = await api.get('/admin/stats');
-      const kpis = res?.data?.kpis ?? {};
+      const res = await axiosSecure.get('/admin/stats');
+      const kpis = res.data?.data?.kpis ?? {};
       set({
         pendingOrders:       kpis.pendingOrders       ?? 0,
         pendingApplications: kpis.pendingApplications ?? 0,

@@ -8,7 +8,7 @@ const FEATURES = [
 ];
 
 const FeatureStrip = () => (
-  <section className="hidden md:block bg-white border-y border-linen">
+  <section className="bg-white border-y border-linen">
     <div className="max-w-305 mx-auto px-4 md:px-10">
       <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-linen">
         {FEATURES.map(({ icon: Icon, title, sub }) => (
