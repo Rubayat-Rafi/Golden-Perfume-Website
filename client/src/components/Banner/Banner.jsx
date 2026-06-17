@@ -7,14 +7,19 @@ import { useBanners } from '../../hooks/queries';
 const isExternal = (url) => /^https?:\/\//i.test(url);
 
 const BannerSlide = ({ banner }) => {
+  const [loaded, setLoaded] = useState(false);
   const img = (
-    <img
-      src={banner.image}
-      alt={banner.title || 'Banner'}
-      className="w-full h-full object-cover"
-    />
+    <>
+      {!loaded && <div className="absolute inset-0 bg-[#e8e8e8] animate-pulse" />}
+      <img
+        src={banner.image}
+        alt={banner.title || 'Banner'}
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-full object-cover transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+      />
+    </>
   );
-  const cls = 'block w-full h-full';
+  const cls = 'relative block w-full h-full';
   if (!banner.link) return <div className={cls}>{img}</div>;
   if (isExternal(banner.link))
     return <a href={banner.link} target="_blank" rel="noopener noreferrer" className={cls}>{img}</a>;

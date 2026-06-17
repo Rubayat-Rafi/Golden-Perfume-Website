@@ -9,7 +9,7 @@ const ArrowBtn = ({ onClick, disabled, dir }) => (
   <button
     onClick={onClick}
     disabled={disabled}
-    className={`absolute ${dir === 'prev' ? 'left-2 md:left-9' : 'right-2 md:right-9'} top-[45%] -translate-y-1/2 w-8 h-12 md:w-10 md:h-15 bg-[#faf9ff] border border-[#eee] flex items-center justify-center hover:bg-dark-green hover:border-dark-green group transition-all duration-300 z-10 disabled:opacity-50 disabled:pointer-events-none cursor-pointer`}
+    className={`absolute ${dir === 'prev' ? 'left-2 md:left-9' : 'right-2 md:right-9'} top-[45%] -translate-y-1/2 w-8 h-12 md:w-10 md:h-15 bg-[#faf9ff] border border-[#eee] flex items-center justify-center hover:bg-forest hover:border-dark-green group transition-all duration-300 z-10 disabled:opacity-50 disabled:pointer-events-none cursor-pointer`}
   >
     {dir === 'prev'
       ? <ChevronLeft size={18} className="text-[#999] group-hover:text-white transition-colors duration-300" />

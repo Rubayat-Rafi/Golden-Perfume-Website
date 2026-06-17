@@ -1,6 +1,7 @@
 import Product from '../models/Product.js';
 import { getDescendantSlugs } from './categoryController.js';
 import { deleteFile } from '../utils/deleteFile.js';
+import { logAction } from '../utils/audit.js';
 
 // Strip wholesalePrice from every variant when user is not wholesale/admin
 const isWholesaleUser = (req) =>
@@ -129,6 +130,15 @@ const resolveFiles = (req) => {
   return { mainFile, galleryFiles };
 };
 
+// Colours are derived from gallery images that carry a colour label.
+// galleryColors is aligned positionally with the final imageGallery array.
+const buildColors = (imageGallery, rawGalleryColors) => {
+  const labels = parseJSON(rawGalleryColors, []);
+  return imageGallery
+    .map((image, i) => ({ image, name: (labels[i] || '').trim() }))
+    .filter((c) => c.name);
+};
+
 export const createProduct = async (req, res, next) => {
   try {
     const { productNumber, name, slug, categorySlug, categoryName, gender, description, content } = req.body;
@@ -156,10 +166,14 @@ export const createProduct = async (req, res, next) => {
       isSale:         parseBool(req.body.isSale, false),
       isStocked:      parseBool(req.body.isStocked, true),
       variants:       parseJSON(req.body.variants),
+      colors:         buildColors(imageGallery, req.body.galleryColors),
       seoTitle:       req.body.seoTitle       || '',
       seoDescription: req.body.seoDescription || '',
+      createdBy:      req.user?._id,
+      updatedBy:      req.user?._id,
     });
 
+    logAction(req, { action: 'create', entity: 'product', entityId: product._id, entityName: product.name });
     res.status(201).json({ success: true, data: product });
   } catch (err) {
     next(err);
@@ -202,6 +216,11 @@ export const updateProduct = async (req, res, next) => {
     const newGalleryUrls = galleryFiles.map((f) => `/uploads/products/${f.filename}`);
     const imageGallery   = [...existingGallery, ...newGalleryUrls];
 
+    // Colours are derived from the gallery images' colour labels
+    const colors = req.body.galleryColors !== undefined
+      ? buildColors(imageGallery, req.body.galleryColors)
+      : current.colors;
+
     const update = {
       productNumber: req.body.productNumber ?? current.productNumber,
       name:          req.body.name          ?? current.name,
@@ -219,8 +238,10 @@ export const updateProduct = async (req, res, next) => {
       isStocked:     req.body.isStocked   !== undefined ? parseBool(req.body.isStocked, true)   : current.isStocked,
       isActive:      req.body.isActive    !== undefined ? parseBool(req.body.isActive, true)    : current.isActive,
       variants:       req.body.variants       !== undefined ? parseJSON(req.body.variants) : current.variants,
+      colors,
       seoTitle:       req.body.seoTitle       ?? current.seoTitle,
       seoDescription: req.body.seoDescription ?? current.seoDescription,
+      updatedBy:      req.user?._id,
     };
 
     const product = await Product.findByIdAndUpdate(
@@ -229,6 +250,7 @@ export const updateProduct = async (req, res, next) => {
       { returnDocument: 'after', runValidators: true }
     );
 
+    logAction(req, { action: 'update', entity: 'product', entityId: product._id, entityName: product.name });
     res.json({ success: true, data: product });
   } catch (err) {
     next(err);
@@ -267,6 +289,7 @@ export const deleteProduct = async (req, res, next) => {
     if (!product)
       return res.status(404).json({ success: false, message: 'Product not found' });
 
+    logAction(req, { action: 'delete', entity: 'product', entityId: product._id, entityName: product.name });
     res.json({ success: true, message: 'Product deactivated', data: product });
   } catch (err) {
     next(err);

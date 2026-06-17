@@ -98,7 +98,7 @@ const CreateModal = ({ onClose, onCreated }) => {
         </div>
         <div className="px-6 py-4 border-t border-[#ececec]">
           <button onClick={submit} disabled={busy}
-            className="w-full h-11 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60">
+            className="w-full h-11 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60">
             {busy ? 'Creating…' : 'Create Staff'}
           </button>
         </div>
@@ -146,7 +146,7 @@ const EditModal = ({ member, onClose, onSaved }) => {
         </div>
         <div className="px-6 py-4 border-t border-[#ececec]">
           <button onClick={save} disabled={busy}
-            className="w-full h-11 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60">
+            className="w-full h-11 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60">
             {busy ? 'Saving…' : 'Save Access'}
           </button>
         </div>
@@ -173,7 +173,7 @@ const DetailsDrawer = ({ member, onClose, onEdit, onRemove, isSelf }) => {
           {/* Identity */}
           <Card className="p-5">
             <div className="flex items-center gap-4">
-              <span className={`shrink-0 w-14 h-14 rounded-full flex items-center justify-center font-lato font-bold text-[20px] ${isAdmin ? 'bg-purple-600 text-white' : 'bg-dark-green text-linen'}`}>
+              <span className={`shrink-0 w-14 h-14 rounded-full flex items-center justify-center font-lato font-bold text-[20px] ${isAdmin ? 'bg-purple-600 text-white' : 'bg-brand-green text-white'}`}>
                 {member.name?.charAt(0).toUpperCase()}
               </span>
               <div className="min-w-0">
@@ -222,7 +222,7 @@ const DetailsDrawer = ({ member, onClose, onEdit, onRemove, isSelf }) => {
         {!isAdmin && (
           <div className="bg-white px-6 py-4 border-t border-[#ececec] shrink-0 flex gap-3">
             <button onClick={() => onEdit(member)}
-              className="flex-1 h-11 flex items-center justify-center gap-2 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer">
+              className="flex-1 h-11 flex items-center justify-center gap-2 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer">
               <Pencil size={14} /> Edit Access
             </button>
             <button onClick={() => onRemove(member)}
@@ -265,7 +265,7 @@ const AdminStaff = () => {
     <div>
       <PageHeader title="Staff & Admins" subtitle={`${total} team member${total !== 1 ? 's' : ''} — create staff and choose their section access`}>
         <button onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 h-10 px-4 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer">
+          className="flex items-center gap-2 h-10 px-4 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer">
           <Plus size={15} /> Add Staff
         </button>
       </PageHeader>
@@ -293,7 +293,7 @@ const AdminStaff = () => {
                     <tr key={m._id} className="border-b border-[#f5f5f5] last:border-0 hover:bg-[#fafafa]">
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
-                          <span className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-lato font-bold text-[13px] ${isAdmin ? 'bg-purple-600 text-white' : 'bg-dark-green text-linen'}`}>
+                          <span className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-lato font-bold text-[13px] ${isAdmin ? 'bg-purple-600 text-white' : 'bg-brand-green text-white'}`}>
                             {m.name?.charAt(0).toUpperCase()}
                           </span>
                           <div className="min-w-0">

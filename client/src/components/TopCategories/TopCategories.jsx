@@ -28,7 +28,7 @@ const CategoryCard = ({ cat }) => (
           <span className="font-playfair text-[28px] text-brand-green/40">{cat.name.charAt(0)}</span>
         </div>
       )}
-      <div className="absolute inset-0 bg-dark-green/0 group-hover:bg-dark-green/18  transition-colors duration-300" />
+      <div className="absolute inset-0 bg-dark-green/0 group-hover:bg-forest/18  transition-colors duration-300" />
     </div>
 
     {/* Label */}

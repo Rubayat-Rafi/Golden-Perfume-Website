@@ -133,7 +133,7 @@ const ChangePassword = () => {
           Show passwords
         </label>
         <button type="submit" disabled={busy}
-          className="h-11 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60">
+          className="h-11 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60">
           {busy ? 'Updating…' : 'Update Password'}
         </button>
       </form>
@@ -275,7 +275,7 @@ const ProfilePage = () => {
                 {TABS.map(({ id, label, icon: Icon }) => (
                   <button key={id} onClick={() => setTab(id)}
                     className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-lato text-[14px] whitespace-nowrap transition-colors cursor-pointer ${
-                      tab === id ? 'bg-dark-green text-linen font-bold shadow-sm' : 'text-dark-green/70 hover:bg-cream'
+                      tab === id ? 'bg-brand-green text-white font-bold shadow-sm' : 'text-dark-green/70 hover:bg-cream'
                     }`}>
                     <Icon size={17} /> {label}
                   </button>
@@ -345,7 +345,7 @@ const ProfilePage = () => {
                     <div className="bg-white border border-[#ececec] rounded-xl p-10 text-center">
                       <ShoppingBag size={28} className="text-[#ccc] mx-auto mb-3" />
                       <p className="font-lato text-[14px] text-[#999] mb-5">You haven't placed any orders yet.</p>
-                      <Link to="/shop" className="inline-block h-11 leading-[44px] px-8 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">Start Shopping</Link>
+                      <Link to="/shop" className="inline-block h-11 leading-[44px] px-8 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">Start Shopping</Link>
                     </div>
                   )}
                 </div>
@@ -363,7 +363,7 @@ const ProfilePage = () => {
                     <ShoppingBag size={32} className="text-[#ccc] mx-auto mb-4" />
                     <h3 className="font-playfair text-[20px] text-dark-green mb-2">No orders yet</h3>
                     <p className="font-lato text-[14px] text-[#999] mb-6">Once you place an order it will show up here.</p>
-                    <Link to="/shop" className="inline-block h-11 leading-[44px] px-8 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">Browse Products</Link>
+                    <Link to="/shop" className="inline-block h-11 leading-[44px] px-8 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">Browse Products</Link>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-3">{orders.map((o) => <OrderCard key={o._id} order={o} />)}</div>

@@ -82,6 +82,22 @@ export const useAdminStats = () =>
     staleTime: 1000 * 60,
   });
 
+export const useAdminRevenue = (params) =>
+  useQuery({
+    queryKey: ['admin', 'revenue', params ?? null],
+    queryFn: () => api.get(`/admin/revenue${qs(params)}`).then((r) => r.data ?? r),
+    staleTime: 1000 * 60,
+    placeholderData: (prev) => prev,
+  });
+
+export const useAuditLogs = (params) =>
+  useQuery({
+    queryKey: ['admin', 'audit', params ?? null],
+    queryFn: () => api.get(`/admin/audit${qs(params)}`).then((r) => r),
+    staleTime: 1000 * 30,
+    placeholderData: (prev) => prev,
+  });
+
 export const useAdminUsers = (params) =>
   useQuery({
     queryKey: ['admin', 'users', params ?? null],

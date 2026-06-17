@@ -2,6 +2,7 @@ import 'dotenv/config';
 import app from './src/app.js';
 import connectDB from './src/config/db.js';
 import { sweepExpiredDeletions } from './src/controllers/adminController.js';
+import { sweepOldAuditLogs } from './src/controllers/auditController.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -12,6 +13,9 @@ connectDB().then(() => {
 
   sweepExpiredDeletions();
   setInterval(sweepExpiredDeletions, 60 * 60 * 1000);
+
+  sweepOldAuditLogs();
+  setInterval(sweepOldAuditLogs, 60 * 60 * 1000);
 }).catch((err) => {
   console.error('[server] failed to connect to DB:', err.message);
   process.exit(1);

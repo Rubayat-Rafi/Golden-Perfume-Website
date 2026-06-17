@@ -150,7 +150,7 @@ const TrackOrderPage = () => {
             <button
               type="submit"
               disabled={loading || !orderNum.trim()}
-              className="h-13 px-7 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-xl hover:bg-forest transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+              className="h-13 px-7 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-xl hover:bg-forest transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
             >
               {loading ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

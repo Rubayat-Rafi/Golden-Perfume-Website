@@ -101,7 +101,7 @@ const CreateModal = ({ onClose, onCreated }) => {
           <button
             onClick={submit}
             disabled={busy}
-            className="w-full h-11 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60"
+            className="w-full h-11 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60"
           >
             {busy ? 'Uploading…' : 'Upload Banner'}
           </button>
@@ -196,7 +196,7 @@ const EditModal = ({ banner, onClose, onSaved }) => {
           <button
             onClick={submit}
             disabled={busy}
-            className="w-full h-11 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60"
+            className="w-full h-11 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60"
           >
             {busy ? 'Saving…' : 'Save Changes'}
           </button>
@@ -268,7 +268,7 @@ const AdminBanners = () => {
       >
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 h-10 px-4 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer"
+          className="flex items-center gap-2 h-10 px-4 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer"
         >
           <Plus size={15} /> Add Banner
         </button>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingBag, Briefcase, Package, Users, FolderTree,
-  Ticket, Mail, LogOut, Menu, ExternalLink, Image as ImageIcon, ShieldCheck, Star, Send,
+  Ticket, Mail, LogOut, Menu, ExternalLink, Image as ImageIcon, ShieldCheck, Star, Send, History,
 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
@@ -22,6 +22,7 @@ const NAV = [
   { to: '/admin/newsletter', label: 'Newsletter',     icon: Send,            perm: 'messages' },
   { to: '/admin/reviews',    label: 'Reviews',        icon: Star,            perm: 'products' },
   { to: '/admin/staff',      label: 'Staff & Admins', icon: ShieldCheck,     adminOnly: true },
+  { to: '/admin/history',    label: 'History',        icon: History,         adminOnly: true },
 ];
 
 const AdminLayout = () => {

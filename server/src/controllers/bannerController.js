@@ -1,5 +1,6 @@
 import Banner from '../models/Banner.js';
 import { deleteFile } from '../utils/deleteFile.js';
+import { logAction } from '../utils/audit.js';
 
 // ─── GET /api/banners ──────────────────────────────────────────────────────
 // Public — active banners for the hero, sorted by order
@@ -39,6 +40,7 @@ export const createBanner = async (req, res, next) => {
       order: Number(order) || 0,
     });
 
+    logAction(req, { action: 'create', entity: 'banner', entityId: banner._id, entityName: banner.title || 'Banner' });
     res.status(201).json({ success: true, data: banner });
   } catch (err) {
     next(err);
@@ -70,6 +72,7 @@ export const updateBanner = async (req, res, next) => {
     }
 
     await banner.save();
+    logAction(req, { action: 'update', entity: 'banner', entityId: banner._id, entityName: banner.title || 'Banner' });
     res.json({ success: true, data: banner });
   } catch (err) {
     next(err);
@@ -106,6 +109,7 @@ export const deleteBanner = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Banner not found' });
 
     deleteFile(banner.image);
+    logAction(req, { action: 'delete', entity: 'banner', entityId: banner._id, entityName: banner.title || 'Banner' });
     res.json({ success: true, message: 'Banner deleted' });
   } catch (err) {
     next(err);

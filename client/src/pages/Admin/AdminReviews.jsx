@@ -188,7 +188,7 @@ const AdminReviews = () => {
                   key={p}
                   onClick={() => setPage(p)}
                   className={`w-9 h-9 rounded-lg font-lato text-[13px] cursor-pointer transition-colors ${
-                    p === page ? 'bg-dark-green text-white' : 'bg-white border border-[#ddd] text-[#666] hover:border-brand-green'
+                    p === page ? 'bg-brand-green text-white' : 'bg-white border border-[#ddd] text-[#666] hover:border-brand-green'
                   }`}
                 >
                   {p}

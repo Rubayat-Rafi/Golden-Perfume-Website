@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Package, Search, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, X, GripVertical } from 'lucide-react';
 import { api } from '../../lib/api';
-import { useProducts } from '../../hooks/queries';
+import { useProducts, useCategories } from '../../hooks/queries';
 import { money, PageHeader, Card, TableSkeleton, EmptyState } from './adminUI';
 
 const LIMIT = 15;
@@ -47,6 +47,8 @@ const AdminProducts = () => {
 
   const [search,       setSearch]       = useState('');
   const [debounced,    setDebounced]    = useState('');
+  const [category,     setCategory]     = useState('');
+  const [flag,         setFlag]         = useState('');   // '', featured, sale, new, instock
   const [page,         setPage]         = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [dragIndex,    setDragIndex]    = useState(null);
@@ -58,12 +60,21 @@ const AdminProducts = () => {
     return () => clearTimeout(t);
   }, [search]);
 
-  // Use sort=order when not searching so drag order is respected
+  const { data: categories = [] } = useCategories({ includeInactive: true });
+
+  const filtering = !!(debounced || category || flag);
+
+  // Use sort=order only when unfiltered so drag order is respected
   const queryParams = {
     page:  String(page),
     limit: String(LIMIT),
-    sort:  debounced ? 'name-asc' : 'order',
+    sort:  filtering ? 'name-asc' : 'order',
     ...(debounced ? { search: debounced } : {}),
+    ...(category  ? { category }       : {}),
+    ...(flag === 'featured' ? { featured: '1' } : {}),
+    ...(flag === 'sale'     ? { sale: '1' }     : {}),
+    ...(flag === 'new'      ? { isNew: '1' }    : {}),
+    ...(flag === 'instock'  ? { inStock: '1' }  : {}),
   };
   const { data, isLoading: loading } = useProducts(queryParams);
   const products   = data?.data       || [];
@@ -74,7 +85,7 @@ const AdminProducts = () => {
   useEffect(() => { setLocalProds(null); }, [data]);
 
   const displayProds = localProds ?? products;
-  const canDrag      = !debounced; // hide drag handles when searching
+  const canDrag      = !filtering; // hide drag handles when filtering/searching
 
   const deleteMutation = useMutation({
     mutationFn: (p) => api.del(`/products/${p._id}`),
@@ -124,21 +135,58 @@ const AdminProducts = () => {
       <PageHeader title="Products" subtitle={`${total} product${total !== 1 ? 's' : ''}${canDrag ? ' · drag to reorder' : ''}`}>
         <button
           onClick={() => navigate('/admin/products/new')}
-          className="flex items-center gap-2 h-10 px-4 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer"
+          className="flex items-center gap-2 h-10 px-4 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer"
         >
           <Plus size={15} /> New Product
         </button>
       </PageHeader>
 
-      {/* Search */}
-      <div className="relative mb-5 max-w-sm">
-        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#aaa]" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search products…"
-          className="w-full h-10 pl-10 pr-4 border border-[#ddd] rounded-lg font-lato text-[13px] outline-none focus:border-brand-green bg-white"
-        />
+      {/* Search + filters */}
+      <div className="flex flex-wrap items-center gap-2.5 mb-5">
+        <div className="relative flex-1 min-w-45 max-w-xs">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#aaa]" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search products…"
+            className="w-full h-10 pl-10 pr-4 border border-[#ddd] rounded-lg font-lato text-[13px] outline-none focus:border-brand-green bg-white"
+          />
+        </div>
+
+        <select
+          value={category}
+          onChange={(e) => { setCategory(e.target.value); setPage(1); setLocalProds(null); }}
+          className="h-10 px-2.5 border border-[#ddd] rounded-lg font-lato text-[13px] bg-white outline-none focus:border-brand-green cursor-pointer max-w-50"
+        >
+          <option value="">All categories</option>
+          {categories
+            .slice()
+            .sort((a, b) => (a.parent || a.slug).localeCompare(b.parent || b.slug) || a.order - b.order)
+            .map((c) => (
+              <option key={c._id} value={c.slug}>{c.parent ? `— ${c.name}` : c.name}</option>
+            ))}
+        </select>
+
+        <select
+          value={flag}
+          onChange={(e) => { setFlag(e.target.value); setPage(1); setLocalProds(null); }}
+          className="h-10 px-2.5 border border-[#ddd] rounded-lg font-lato text-[13px] bg-white outline-none focus:border-brand-green cursor-pointer"
+        >
+          <option value="">All products</option>
+          <option value="featured">Featured</option>
+          <option value="sale">On Sale</option>
+          <option value="new">New Arrivals</option>
+          <option value="instock">In Stock</option>
+        </select>
+
+        {filtering && (
+          <button
+            onClick={() => { setSearch(''); setCategory(''); setFlag(''); setPage(1); setLocalProds(null); }}
+            className="h-10 px-3 font-lato text-[13px] text-[#999] hover:text-red-500 transition-colors cursor-pointer"
+          >
+            Clear
+          </button>
+        )}
       </div>
 
       {reorderMutation.isPending && (

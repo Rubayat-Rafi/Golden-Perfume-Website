@@ -59,7 +59,7 @@ const AdminNewsletter = () => {
         <button
           onClick={exportCsv}
           disabled={!subscribers.length}
-          className="h-10 px-4 inline-flex items-center gap-2 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="h-10 px-4 inline-flex items-center gap-2 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Download size={15} /> Export CSV
         </button>
@@ -129,7 +129,7 @@ const AdminNewsletter = () => {
                   key={p}
                   onClick={() => setPage(p)}
                   className={`w-9 h-9 rounded-lg font-lato text-[13px] cursor-pointer transition-colors ${
-                    p === page ? 'bg-dark-green text-white' : 'bg-white border border-[#ddd] text-[#666] hover:border-brand-green'
+                    p === page ? 'bg-brand-green text-white' : 'bg-white border border-[#ddd] text-[#666] hover:border-brand-green'
                   }`}
                 >
                   {p}

@@ -40,7 +40,7 @@ const StepCard = ({ step, icon: Icon, title, subtitle, children }) => (
         <div className="w-11 h-11 rounded-full bg-brand-green/10 flex items-center justify-center">
           <Icon size={19} className="text-brand-green" />
         </div>
-        <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-dark-green text-linen font-lato font-bold text-[10px] flex items-center justify-center">
+        <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-brand-green text-white font-lato font-bold text-[10px] flex items-center justify-center">
           {step}
         </span>
       </div>
@@ -133,7 +133,7 @@ const WholesaleApplicationPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/wholesale"
-              className="inline-flex items-center justify-center h-12 px-8 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300"
+              className="inline-flex items-center justify-center h-12 px-8 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300"
             >
               Check Application Status
             </Link>
@@ -348,7 +348,7 @@ const WholesaleApplicationPage = () => {
 
             {/* Submit */}
             <button type="submit" disabled={submitting}
-              className="w-full h-13 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full h-13 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {submitting ? 'Submitting application…' : 'Submit Application'}
             </button>

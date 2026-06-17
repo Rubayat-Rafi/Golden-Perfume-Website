@@ -39,7 +39,7 @@ const ViewModal = ({ msg, onClose }) => (
         <span className="font-lato text-[11px] text-[#aaa]">{formatDateTime(msg.createdAt)}</span>
         <a
           href={`mailto:${msg.email}?subject=Re: ${encodeURIComponent(msg.subject || 'Your inquiry')}`}
-          className="inline-flex items-center gap-2 h-9 px-4 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors"
+          className="inline-flex items-center gap-2 h-9 px-4 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors"
         >
           <Mail size={13} /> Reply via Email
         </a>
@@ -238,7 +238,7 @@ const AdminMessages = () => {
                     onClick={() => goTo(p)}
                     className={`h-8 w-8 border font-lato text-[12px] rounded-lg transition-colors cursor-pointer ${
                       p === page
-                        ? 'bg-dark-green text-linen border-dark-green'
+                        ? 'bg-brand-green text-white border-dark-green'
                         : 'border-[#e0e0e0] text-[#888] hover:border-brand-green hover:text-brand-green'
                     }`}
                   >

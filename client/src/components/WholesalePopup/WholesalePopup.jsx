@@ -15,7 +15,7 @@ const WholesalePopup = () => {
 
   return (
     <div className="fixed bottom-6 left-5 z-[190] max-w-[280px] group">
-      <div className="relative bg-dark-green text-linen rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.22)] overflow-hidden">
+      <div className="relative bg-brand-green text-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.22)] overflow-hidden">
         {/* Close */}
         <button
           onClick={() => setDismissed(true)}
@@ -27,17 +27,17 @@ const WholesalePopup = () => {
 
         {/* Content */}
         <Link to="/wholesale-apply" className="flex items-start gap-3 px-4 pt-4 pb-4 pr-9 cursor-pointer">
-          <span className="shrink-0 w-9 h-9 rounded-full bg-gold/20 flex items-center justify-center mt-0.5">
-            <Store size={17} className="text-gold" />
+          <span className="shrink-0 w-9 h-9 rounded-full bg-white/15 flex items-center justify-center mt-0.5">
+            <Store size={17} className="text-[#F0D592]" />
           </span>
           <div>
-            <p className="font-lato font-bold text-[12px] uppercase tracking-[1.5px] text-gold mb-1">
+            <p className="font-lato font-bold text-[12px] uppercase tracking-[1.5px] text-[#F0D592] mb-1">
               Wholesale & Distributor
             </p>
-            <p className="font-lato text-[13px] leading-snug text-white/85">
+            <p className="font-lato text-[13px] leading-snug text-white">
               Want to Become a Distributor or Wholesaler?
             </p>
-            <span className="inline-flex items-center gap-1 font-lato text-[11px] text-gold/80 hover:text-gold mt-2 transition-colors">
+            <span className="inline-flex items-center gap-1 font-lato font-bold text-[11px] text-white hover:text-[#F0D592] mt-2 transition-colors">
               Apply now <ArrowRight size={11} />
             </span>
           </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Users, Search, ChevronLeft, ChevronRight, Eye, X, Mail, Phone, Calendar, ShoppingBag, DollarSign, Trash2 } from 'lucide-react';
+import { Users, Search, ChevronLeft, ChevronRight, Eye, X, Mail, Phone, Calendar, ShoppingBag, DollarSign, Trash2, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 import { api } from '../../lib/api';
 import { useAuth } from '../../hooks/useAuth';
 import { useAdminUsers, useAdminUser } from '../../hooks/queries';
@@ -30,7 +31,7 @@ const DetailsDrawer = ({ userId, onClose }) => {
             {/* Identity */}
             <Card className="p-5">
               <div className="flex items-center gap-4">
-                <span className="shrink-0 w-14 h-14 rounded-full bg-dark-green text-linen flex items-center justify-center font-lato font-bold text-[20px]">
+                <span className="shrink-0 w-14 h-14 rounded-full bg-brand-green text-white flex items-center justify-center font-lato font-bold text-[20px]">
                   {data.user.name?.charAt(0).toUpperCase()}
                 </span>
                 <div className="min-w-0">
@@ -102,6 +103,44 @@ const DetailsDrawer = ({ userId, onClose }) => {
   );
 };
 
+// Delete confirmation modal
+const DeleteCustomerModal = ({ user, onCancel, onConfirm, busy }) => (
+  <>
+    <div className="fixed inset-0 bg-black/40 z-40" onClick={onCancel} />
+    <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl z-50 shadow-2xl p-6">
+      <div className="flex items-start gap-3 mb-4">
+        <span className="shrink-0 w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+          <AlertTriangle size={19} className="text-red-500" />
+        </span>
+        <div className="flex-1">
+          <h3 className="font-playfair text-[18px] text-dark-green leading-tight">Delete Account</h3>
+          <p className="font-lato text-[12px] text-[#aaa] mt-0.5">This action cannot be undone</p>
+        </div>
+        <button onClick={onCancel} className="text-[#aaa] hover:text-dark-green cursor-pointer"><X size={18} /></button>
+      </div>
+      <p className="font-lato text-[13px] text-[#555] leading-relaxed mb-5">
+        Permanently delete <strong className="text-dark-green">{user.name}</strong>&apos;s account
+        ({user.email})? This also removes any wholesale application tied to it.
+      </p>
+      <div className="flex gap-3">
+        <button
+          onClick={onConfirm}
+          disabled={busy}
+          className="h-10 px-5 bg-red-600 text-white font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-60"
+        >
+          {busy ? 'Deleting…' : 'Delete Account'}
+        </button>
+        <button
+          onClick={onCancel}
+          className="h-10 px-5 border border-[#ddd] text-[#666] font-lato text-[13px] rounded-lg hover:border-[#999] transition-colors cursor-pointer"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </>
+);
+
 const AdminCustomers = () => {
   const { role } = useAuth();
   const isAdmin = role === 'admin';
@@ -111,6 +150,8 @@ const AdminCustomers = () => {
   const [page, setPage]       = useState(1);
   const [viewId, setViewId]   = useState(null);
   const [deletionOnly, setDeletionOnly] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const queryParams = {
     page: String(page),
@@ -124,19 +165,27 @@ const AdminCustomers = () => {
   const total      = data?.total      || 0;
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
 
-  const remove = async (u) => {
-    if (!confirm(`Delete ${u.name}'s account? This permanently removes the customer and cannot be undone.`)) return;
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await api.del(`/admin/users/${u._id}`);
+      await api.del(`/admin/users/${deleteTarget._id}`);
+      setDeleteTarget(null);
       invalidate();
-    } catch (e) { alert(e.message); }
+      toast.success('Account deleted');
+    } catch (e) {
+      toast.error(e.message || 'Failed to delete account');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const rejectDeletion = async (u) => {
     try {
       await api.patch(`/admin/users/${u._id}/deletion-reject`);
       invalidate();
-    } catch (e) { alert(e.message); }
+      toast.success('Deletion request rejected');
+    } catch (e) { toast.error(e.message || 'Failed to reject request'); }
   };
 
   useEffect(() => {
@@ -151,7 +200,7 @@ const AdminCustomers = () => {
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <div className="flex gap-2">
           <button onClick={() => { setDeletionOnly(false); setPage(1); }}
-            className={`px-3.5 h-10 rounded-lg font-lato text-[13px] transition-colors cursor-pointer ${!deletionOnly ? 'bg-dark-green text-linen' : 'bg-white border border-[#ddd] text-[#666] hover:border-dark-green'}`}>
+            className={`px-3.5 h-10 rounded-lg font-lato text-[13px] transition-colors cursor-pointer ${!deletionOnly ? 'bg-brand-green text-white' : 'bg-white border border-[#ddd] text-[#666] hover:border-dark-green'}`}>
             All Customers
           </button>
           <button onClick={() => { setDeletionOnly(true); setPage(1); }}
@@ -187,7 +236,7 @@ const AdminCustomers = () => {
                   <tr key={u._id} className="border-b border-[#f5f5f5] last:border-0 hover:bg-[#fafafa]">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="shrink-0 w-9 h-9 rounded-full bg-dark-green text-linen flex items-center justify-center font-lato font-bold text-[13px]">
+                        <span className="shrink-0 w-9 h-9 rounded-full bg-brand-green text-white flex items-center justify-center font-lato font-bold text-[13px]">
                           {u.name?.charAt(0).toUpperCase()}
                         </span>
                         <div className="min-w-0">
@@ -213,7 +262,7 @@ const AdminCustomers = () => {
                               className="h-9 px-3 border border-[#ddd] rounded-lg font-lato text-[12px] text-[#666] hover:border-dark-green transition-colors cursor-pointer">
                               Reject
                             </button>
-                            <button onClick={() => remove(u)}
+                            <button onClick={() => setDeleteTarget(u)}
                               className="h-9 px-3 bg-red-500 text-white rounded-lg font-lato font-bold text-[12px] hover:bg-red-600 transition-colors cursor-pointer">
                               Approve
                             </button>
@@ -225,7 +274,7 @@ const AdminCustomers = () => {
                               <Eye size={16} />
                             </button>
                             {isAdmin && (
-                              <button onClick={() => remove(u)} title="Delete account"
+                              <button onClick={() => setDeleteTarget(u)} title="Delete account"
                                 className="w-9 h-9 inline-flex items-center justify-center border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-colors cursor-pointer">
                                 <Trash2 size={15} />
                               </button>
@@ -255,6 +304,15 @@ const AdminCustomers = () => {
       )}
 
       {viewId && <DetailsDrawer userId={viewId} onClose={() => setViewId(null)} />}
+
+      {deleteTarget && (
+        <DeleteCustomerModal
+          user={deleteTarget}
+          busy={deleting}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={confirmDelete}
+        />
+      )}
     </div>
   );
 };

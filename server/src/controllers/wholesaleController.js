@@ -1,5 +1,8 @@
 import WholesaleApplication from '../models/WholesaleApplication.js';
 import User from '../models/User.js';
+import { sendMailAsync } from '../utils/mailer.js';
+import { wholesaleDecisionEmail } from '../utils/emailTemplates.js';
+import { logAction } from '../utils/audit.js';
 
 // ─── GET /api/wholesale/applications ──────────────────────────────────────
 // Admin — list all applications, filterable by status
@@ -90,6 +93,21 @@ export const reviewApplication = async (req, res, next) => {
     const updated = await WholesaleApplication.findById(req.params.id)
       .populate('userId',     'name email role')
       .populate('reviewedBy', 'name email');
+
+    logAction(req, { action: 'update', entity: 'wholesale', entityId: application._id, entityName: application.businessName, meta: { status } });
+
+    // Email the applicant their decision (only on approve/reject)
+    if (status === 'approved' || status === 'rejected') {
+      sendMailAsync({
+        to: application.email || applicant?.email,
+        ...wholesaleDecisionEmail({
+          contactName:  application.contactName,
+          businessName: application.businessName,
+          status,
+          adminNote,
+        }),
+      });
+    }
 
     res.json({
       success: true,

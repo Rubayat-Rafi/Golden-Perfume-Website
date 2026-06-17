@@ -19,6 +19,13 @@ const variantSchema = new mongoose.Schema({
   stockQty:       { type: Number, default: 0 },
 }, { _id: false });
 
+// Product-level colours — independent of size variants. Each colour has its
+// own image which is shown on the product page when that colour is selected.
+const colorSchema = new mongoose.Schema({
+  name:  { type: String, required: true },
+  image: { type: String, default: '' },
+}, { _id: false });
+
 const productSchema = new mongoose.Schema(
   {
     productNumber: { type: String, required: true, unique: true, trim: true },
@@ -49,11 +56,16 @@ const productSchema = new mongoose.Schema(
 
     tags:     { type: [String], default: [] },
     variants: { type: [variantSchema], default: [] },
+    colors:   { type: [colorSchema], default: [] },
     reviews:  { type: [reviewSchema], default: [] },
 
     // Cached aggregates — updated on review add/edit
     rating:      { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },
+
+    // Audit — who created / last updated this product
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true, suppressReservedKeysWarning: true }
 );

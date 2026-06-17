@@ -14,7 +14,7 @@ const ToolBtn = ({ active, disabled, onClick, title, children }) => (
     onClick={onClick}
     className={`w-7 h-7 flex items-center justify-center rounded transition-colors cursor-pointer
       ${active
-        ? 'bg-dark-green text-white'
+        ? 'bg-brand-green text-white'
         : 'text-[#555] hover:bg-[#f0f0f0] disabled:opacity-30 disabled:cursor-not-allowed'
       }`}
   >

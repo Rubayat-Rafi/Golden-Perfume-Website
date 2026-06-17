@@ -116,7 +116,7 @@ const RegisterPage = () => {
               type="button"
               onClick={() => setAccountType('customer')}
               className={`flex-1 h-10 rounded-md font-lato font-bold text-[12px] uppercase tracking-[1px] transition-all duration-200 cursor-pointer ${
-                accountType === 'customer' ? 'bg-dark-green text-linen shadow-sm' : 'text-[#999] hover:text-dark-green'
+                accountType === 'customer' ? 'bg-brand-green text-white shadow-sm' : 'text-[#999] hover:text-dark-green'
               }`}
             >
               Customer
@@ -206,7 +206,7 @@ const RegisterPage = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full h-12 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {submitting ? 'Creating account…' : 'Create Account'}
             </button>

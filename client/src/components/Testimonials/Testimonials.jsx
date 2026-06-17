@@ -27,7 +27,7 @@ const Testimonials = () => (
             </div>
             <p className="font-lato text-[14px] text-dark-green/80 leading-relaxed mb-6">“{r.text}”</p>
             <div className="flex items-center gap-3">
-              <span className="w-10 h-10 rounded-full bg-dark-green text-linen flex items-center justify-center font-playfair font-bold text-[15px]">
+              <span className="w-10 h-10 rounded-full bg-brand-green text-white flex items-center justify-center font-playfair font-bold text-[15px]">
                 {r.name.charAt(0)}
               </span>
               <div>

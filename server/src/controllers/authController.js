@@ -1,6 +1,8 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import WholesaleApplication from '../models/WholesaleApplication.js';
+import { sendMailAsync, ADMIN_EMAIL } from '../utils/mailer.js';
+import { wholesaleReceivedEmail, newWholesaleAdminEmail } from '../utils/emailTemplates.js';
 
 // ─── Token helpers ─────────────────────────────────────────────────────────
 
@@ -253,6 +255,13 @@ export const wholesaleApply = async (req, res, next) => {
     await user.save();
 
     res.cookie('refreshToken', refreshToken, COOKIE_OPTS);
+
+    // ── Email notifications (fire-and-forget; no-op if SMTP not configured) ──
+    sendMailAsync({ to: email, ...wholesaleReceivedEmail({ contactName, businessName }) });
+    if (ADMIN_EMAIL) {
+      sendMailAsync({ to: ADMIN_EMAIL, replyTo: email, ...newWholesaleAdminEmail({ application }) });
+    }
+
     res.status(201).json({
       success: true,
       message: 'Application submitted. We will review it within 2 business days.',

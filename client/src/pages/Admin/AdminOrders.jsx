@@ -12,7 +12,7 @@ const FilterTab = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
     className={`px-3.5 h-8 rounded-full font-lato text-[12px] whitespace-nowrap transition-colors cursor-pointer ${
-      active ? 'bg-dark-green text-linen' : 'bg-white border border-[#ddd] text-[#666] hover:border-dark-green'
+      active ? 'bg-brand-green text-white' : 'bg-white border border-[#ddd] text-[#666] hover:border-dark-green'
     }`}
   >
     {children}
@@ -126,7 +126,7 @@ const OrderDrawer = ({ order, onClose, onUpdated }) => {
         {/* Save */}
         <div className="bg-white px-6 py-4 border-t border-[#ececec] shrink-0">
           <button onClick={save} disabled={saving}
-            className="w-full h-11 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60">
+            className="w-full h-11 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60">
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>

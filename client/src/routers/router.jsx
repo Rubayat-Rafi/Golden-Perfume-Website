@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, useParams } from "react-router-dom";
 import MainLayout from "../MainLayout/MainLayout";
 import Home from "../pages/Home/Home";
 import LoginPage from "../pages/Login/LoginPage";
+import ForgotPasswordPage from "../pages/Login/ForgotPasswordPage";
 import RegisterPage from "../pages/Register/RegisterPage";
 import WholesaleApplicationPage from "../pages/Register/WholesaleApplicationPage";
 import CartPage from "../pages/Cart/CartPage";
@@ -30,6 +31,7 @@ import AdminCategoryForm from "../pages/Admin/AdminCategoryForm";
 import AdminProductForm from "../pages/Admin/AdminProductForm";
 import AdminReviews from "../pages/Admin/AdminReviews";
 import AdminNewsletter from "../pages/Admin/AdminNewsletter";
+import AdminHistory from "../pages/Admin/AdminHistory";
 
 // Remounts ProductDetail (resetting all local state) when the slug changes
 const ProductDetailRoute = () => { const { id } = useParams(); return <ProductDetail key={id} />; };
@@ -43,8 +45,9 @@ const Stub = ({ title }) => (
 
 export const router = createBrowserRouter([
   // ── Public pages (no MainLayout header/footer on auth pages) ──
-  { path: "/login",           element: <LoginPage /> },
-  { path: "/register",        element: <RegisterPage /> },
+  { path: "/login",            element: <LoginPage /> },
+  { path: "/forgot-password",  element: <ForgotPasswordPage /> },
+  { path: "/register",         element: <RegisterPage /> },
   { path: "/wholesale-apply", element: <WholesaleApplicationPage /> },
 
   // ── Site pages (with MainLayout: header + footer) ──
@@ -127,6 +130,7 @@ export const router = createBrowserRouter([
       { path: "newsletter", element: <PermGuard section="messages"><AdminNewsletter /></PermGuard> },
       { path: "reviews",   element: <PermGuard section="products"><AdminReviews /></PermGuard> },
       { path: "staff",     element: <PermGuard adminOnly><AdminStaff /></PermGuard> },
+      { path: "history",   element: <PermGuard adminOnly><AdminHistory /></PermGuard> },
     ],
   },
 ]);

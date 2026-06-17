@@ -1,5 +1,6 @@
 import Category from '../models/Category.js';
 import { deleteFile } from '../utils/deleteFile.js';
+import { logAction } from '../utils/audit.js';
 
 // Resolve a category slug + all of its descendant slugs (any depth).
 // Used by the product filter so selecting a parent shows everything beneath it.
@@ -77,6 +78,7 @@ export const createCategory = async (req, res, next) => {
       order: Number(req.body.order) || 0,
       gender,
     });
+    logAction(req, { action: 'create', entity: 'category', entityId: category._id, entityName: category.name });
     res.status(201).json({ success: true, data: category });
   } catch (err) {
     next(err);
@@ -139,6 +141,7 @@ export const updateCategory = async (req, res, next) => {
       { returnDocument: 'after', runValidators: true }
     );
 
+    logAction(req, { action: 'update', entity: 'category', entityId: category._id, entityName: category.name });
     res.json({ success: true, data: category });
   } catch (err) {
     next(err);
@@ -175,6 +178,7 @@ export const deleteCategory = async (req, res, next) => {
       { returnDocument: 'after' }
     );
     if (!category) return res.status(404).json({ success: false, message: 'Category not found' });
+    logAction(req, { action: 'delete', entity: 'category', entityId: category._id, entityName: category.name });
     res.json({ success: true, message: 'Category deactivated', data: category });
   } catch (err) {
     next(err);

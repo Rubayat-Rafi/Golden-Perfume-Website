@@ -19,7 +19,7 @@ const BrandStory = () => (
             <img src="/assets/brand/about-2.jpg" alt="" className="w-full h-72 md:h-96 object-cover mt-8" />
           </div>
           {/* floating badge */}
-          <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-dark-green text-linen px-7 py-4 text-center shadow-xl">
+          <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-brand-green text-white px-7 py-4 text-center shadow-xl">
             <p className="font-playfair text-[26px] leading-none">15+</p>
             <p className="font-lato text-[10px] uppercase tracking-[2px] mt-1 text-gold">Years of Craft</p>
           </div>
@@ -46,7 +46,7 @@ const BrandStory = () => (
             ))}
           </ul>
           <Link to="/shop"
-            className="inline-flex items-center justify-center h-12 px-10 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[2px] rounded-[3px] hover:bg-brand-green transition-colors duration-300">
+            className="inline-flex items-center justify-center h-12 px-10 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[2px] rounded-[3px] hover:bg-brand-green transition-colors duration-300">
             Explore Our Collection
           </Link>
         </div>

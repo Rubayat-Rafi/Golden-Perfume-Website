@@ -57,7 +57,7 @@ const SingleProduct = ({ product }) => {
               addItem(showWholesale ? { ...product, price: wholesalePrice } : product, 1);
               openSidebar();
             }}
-              className="flex-1 h-10 bg-dark-green/90 backdrop-blur-sm text-linen font-lato text-[11px] font-bold uppercase tracking-[1px] flex items-center justify-center gap-1.5 hover:bg-dark-green transition-colors cursor-pointer"
+              className="flex-1 h-10 bg-dark-green/90 backdrop-blur-sm text-linen font-lato text-[11px] font-bold uppercase tracking-[1px] flex items-center justify-center gap-1.5 hover:bg-forest transition-colors cursor-pointer"
             >
               <ShoppingCart size={13} />
               Add to Cart
@@ -67,7 +67,7 @@ const SingleProduct = ({ product }) => {
               className={`w-10 h-10 flex items-center justify-center border-l border-white/20 backdrop-blur-sm transition-colors cursor-pointer ${
                 wishlisted
                   ? 'bg-gold/90 text-dark-green hover:bg-gold'
-                  : 'bg-dark-green/90 text-white/80 hover:bg-dark-green hover:text-white'
+                  : 'bg-dark-green/90 text-white/80 hover:bg-forest hover:text-white'
               }`}
               aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
             >

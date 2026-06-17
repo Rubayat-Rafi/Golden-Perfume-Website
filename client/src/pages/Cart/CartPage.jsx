@@ -208,7 +208,7 @@ const CartPage = () => {
             <button
               type="submit"
               disabled={promoLoading}
-              className="h-12 px-6 bg-dark-green text-linen font-lato font-bold text-sm uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors duration-300 cursor-pointer disabled:opacity-60"
+              className="h-12 px-6 bg-brand-green text-white font-lato font-bold text-sm uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors duration-300 cursor-pointer disabled:opacity-60"
             >
               {promoLoading ? '…' : 'Apply'}
             </button>

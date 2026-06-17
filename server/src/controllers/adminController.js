@@ -3,6 +3,7 @@ import Product from '../models/Product.js';
 import WholesaleApplication from '../models/WholesaleApplication.js';
 import ContactMessage from '../models/ContactMessage.js';
 import User from '../models/User.js';
+import { logAction } from '../utils/audit.js';
 
 // ─── GET /api/admin/stats ──────────────────────────────────────────────────
 // Admin — aggregated KPIs for the dashboard
@@ -74,6 +75,114 @@ export const getStats = async (req, res, next) => {
         },
         channels,
         recentOrders,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── GET /api/admin/revenue ────────────────────────────────────────────────
+// Admin — revenue & order time-series for the dashboard chart.
+// Query: range = 7d | 30d | 90d | 12m  (or custom: from=YYYY-MM-DD&to=YYYY-MM-DD),
+//        channel = all | b2c | b2b, paidOnly = 1
+const DAY = 86400000;
+const parseISODate = (s) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s || '')) return null;
+  const d = new Date(`${s}T00:00:00.000Z`);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+export const getRevenueSeries = async (req, res, next) => {
+  try {
+    const channel  = ['b2c', 'b2b'].includes(req.query.channel) ? req.query.channel : null;
+    const paidOnly = req.query.paidOnly === '1' || req.query.paidOnly === 'true';
+
+    const now = new Date();
+    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+    // Resolve the window: custom from/to wins, otherwise a preset range
+    let start, endInclusive, range;
+    const fromD = parseISODate(req.query.from);
+    const toD   = parseISODate(req.query.to);
+
+    if (fromD && toD && fromD <= toD) {
+      // Cap custom ranges to ~3 years to keep the response bounded
+      const cappedFrom = new Date(Math.max(fromD.getTime(), toD.getTime() - 1095 * DAY));
+      start = cappedFrom;
+      endInclusive = toD;
+      range = 'custom';
+    } else {
+      range = ['7d', '30d', '90d', '12m'].includes(req.query.range) ? req.query.range : '30d';
+      endInclusive = todayUTC;
+      if (range === '12m') {
+        start = new Date(Date.UTC(todayUTC.getUTCFullYear(), todayUTC.getUTCMonth() - 11, 1));
+      } else {
+        const days = range === '7d' ? 7 : range === '90d' ? 90 : 30;
+        start = new Date(todayUTC.getTime() - (days - 1) * DAY);
+      }
+    }
+
+    // Bucket by month when the span is long, otherwise by day
+    const spanDays = Math.round((endInclusive - start) / DAY) + 1;
+    const monthly  = spanDays > 92;
+    const endExclusive = new Date(endInclusive.getTime() + DAY);
+
+    const match = { createdAt: { $gte: start, $lt: endExclusive } };
+    if (channel) match.customerType = channel;
+    if (paidOnly) match.paymentStatus = 'paid';
+
+    const fmt = monthly ? '%Y-%m' : '%Y-%m-%d';
+    const agg = await Order.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id:     { $dateToString: { format: fmt, date: '$createdAt', timezone: 'UTC' } },
+          revenue: { $sum: '$grandTotal' },
+          orders:  { $sum: 1 },
+        },
+      },
+    ]);
+    const map = Object.fromEntries(agg.map((a) => [a._id, a]));
+    const pad = (n) => String(n).padStart(2, '0');
+
+    // Build a continuous axis so gaps render as zero
+    const series = [];
+    const push = (key, label) => {
+      const e = map[key];
+      series.push({ label, revenue: Math.round((e?.revenue || 0) * 100) / 100, orders: e?.orders || 0 });
+    };
+    if (monthly) {
+      let y = start.getUTCFullYear(), m = start.getUTCMonth();
+      const endY = endInclusive.getUTCFullYear(), endM = endInclusive.getUTCMonth();
+      while (y < endY || (y === endY && m <= endM)) {
+        const d = new Date(Date.UTC(y, m, 1));
+        push(`${y}-${pad(m + 1)}`, `${d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })} ${String(y).slice(2)}`);
+        if (++m > 11) { m = 0; y++; }
+      }
+    } else {
+      const days = Math.round((endExclusive - start) / DAY);
+      for (let i = 0; i < days; i++) {
+        const d = new Date(start.getTime() + i * DAY);
+        push(
+          `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`,
+          d.toLocaleString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+        );
+      }
+    }
+
+    const totalRevenue  = Math.round(series.reduce((s, p) => s + p.revenue, 0) * 100) / 100;
+    const totalOrders   = series.reduce((s, p) => s + p.orders, 0);
+    const avgOrderValue = totalOrders ? Math.round((totalRevenue / totalOrders) * 100) / 100 : 0;
+
+    res.json({
+      success: true,
+      data: {
+        range,
+        channel: channel || 'all',
+        paidOnly,
+        series,
+        summary: { totalRevenue, totalOrders, avgOrderValue },
       },
     });
   } catch (err) {
@@ -213,6 +322,7 @@ export const deleteUser = async (req, res, next) => {
     await WholesaleApplication.deleteMany({ userId: user._id });
     await user.deleteOne();
 
+    logAction(req, { action: 'delete', entity: 'customer', entityId: user._id, entityName: user.name, meta: { email: user.email } });
     res.json({ success: true, message: 'Account deleted' });
   } catch (err) {
     next(err);
@@ -276,6 +386,7 @@ export const createStaff = async (req, res, next) => {
       permissions: cleanPermissions(permissions),
     });
 
+    logAction(req, { action: 'create', entity: 'staff', entityId: user._id, entityName: user.name, meta: { email: user.email } });
     res.status(201).json({ success: true, data: user.toPublic() });
   } catch (err) {
     next(err);
@@ -297,6 +408,7 @@ export const updateStaff = async (req, res, next) => {
     if (permissions !== undefined) user.permissions = cleanPermissions(permissions);
     await user.save();
 
+    logAction(req, { action: 'update', entity: 'staff', entityId: user._id, entityName: user.name });
     res.json({ success: true, data: user.toPublic() });
   } catch (err) {
     next(err);
@@ -316,6 +428,7 @@ export const deleteStaff = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Admin accounts cannot be removed here' });
 
     await user.deleteOne();
+    logAction(req, { action: 'delete', entity: 'staff', entityId: user._id, entityName: user.name, meta: { email: user.email } });
     res.json({ success: true, message: 'Staff member removed' });
   } catch (err) {
     next(err);
@@ -342,6 +455,7 @@ export const updateUserRole = async (req, res, next) => {
     );
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
+    logAction(req, { action: 'update', entity: 'staff', entityId: user._id, entityName: user.name, meta: { role } });
     res.json({ success: true, data: user.toPublic() });
   } catch (err) {
     next(err);

@@ -172,7 +172,7 @@ const ContactPage = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex items-center justify-center gap-2.5 w-full h-12 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                    className="flex items-center justify-center gap-2.5 w-full h-12 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <Send size={15} />
                     {submitting ? 'Sending…' : 'Send Message'}

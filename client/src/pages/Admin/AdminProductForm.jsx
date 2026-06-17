@@ -14,7 +14,46 @@ const genNum  = () => `GP-${Math.floor(100000 + Math.random() * 900000)}`;
 const inputCls = 'w-full h-10 px-3 border border-[#ddd] rounded-lg font-lato text-[13px] outline-none focus:border-brand-green transition-colors';
 const labelCls = 'block font-lato text-[12px] text-[#666] mb-1.5';
 
-const blankVariant = () => ({ sku: '', size: '', color: '', retailPrice: '', wholesalePrice: '', inStock: true, stockQty: '' });
+const blankVariant = () => ({ sku: '', size: '', retailPrice: '', wholesalePrice: '', inStock: true, stockQty: '' });
+
+// Per-image colour tag — choose Name (e.g. "White") or Code (hex picker).
+// An image with a colour becomes a selectable colour option on the product page.
+const ColorTag = ({ value, mode, onChange }) => (
+  <div className="mt-1.5 w-24">
+    <div className="flex rounded-md overflow-hidden border border-[#e5e5e5] mb-1">
+      {['name', 'code'].map((m) => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => onChange({ colorMode: m, color: '' })}
+          className={`flex-1 py-0.5 font-lato text-[10px] capitalize transition-colors cursor-pointer ${
+            mode === m ? 'bg-brand-green text-white' : 'bg-white text-[#888] hover:bg-[#f5f5f5]'
+          }`}
+        >
+          {m}
+        </button>
+      ))}
+    </div>
+    {mode === 'code' ? (
+      <div className="flex items-center gap-1">
+        <input
+          type="color"
+          value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : '#000000'}
+          onChange={(e) => onChange({ color: e.target.value })}
+          className="w-7 h-7 rounded cursor-pointer border border-[#ddd] bg-white p-0 shrink-0"
+        />
+        <span className="font-lato text-[10px] text-[#888] truncate">{value || '—'}</span>
+      </div>
+    ) : (
+      <input
+        value={value}
+        onChange={(e) => onChange({ color: e.target.value })}
+        placeholder="Color name"
+        className="w-full h-7 px-2 border border-[#ddd] rounded font-lato text-[11px] outline-none focus:border-brand-green"
+      />
+    )}
+  </div>
+);
 
 const AdminProductForm = () => {
   const { id }   = useParams();
@@ -58,10 +97,11 @@ const AdminProductForm = () => {
   const [mainImgFile,    setMainImgFile]    = useState(null);
   const [mainImgPreview, setMainImgPreview] = useState('');
 
-  // Gallery images — split into kept existing URLs and new File objects
-  const [galleryUrls,  setGalleryUrls]  = useState([]); // existing URLs to keep
-  const [galleryFiles, setGalleryFiles] = useState([]); // new File objects + blob previews
-  // galleryFiles entries: { file: File, preview: string }
+  // Gallery images — split into kept existing URLs and new File objects.
+  // Each entry carries an optional color label (name or hex code); images
+  // tagged with a color become selectable color options on the product page.
+  const [galleryUrls,  setGalleryUrls]  = useState([]); // { url, color, colorMode }
+  const [galleryFiles, setGalleryFiles] = useState([]); // { file, preview, color, colorMode }
 
   // SEO
   const [seoTitle,       setSeoTitle]       = useState('');
@@ -102,12 +142,18 @@ const AdminProductForm = () => {
           setSeoTitle(product.seoTitle || '');
           setSeoDescription(product.seoDescription || '');
           if (product.image)               setMainImgPreview(product.image);
-          if (product.imageGallery?.length) setGalleryUrls(product.imageGallery);
+          if (product.imageGallery?.length) {
+            const colorByImage = {};
+            (product.colors || []).forEach((c) => { if (c.image) colorByImage[c.image] = c.name; });
+            setGalleryUrls(product.imageGallery.map((url) => {
+              const color = colorByImage[url] || '';
+              return { url, color, colorMode: color.startsWith('#') ? 'code' : 'name' };
+            }));
+          }
           if (product.variants?.length) {
             setVariants(product.variants.map((v) => ({
               sku:            v.sku            ?? '',
               size:           v.size           ?? '',
-              color:          v.color          ?? '',
               retailPrice:    v.retailPrice    ?? '',
               wholesalePrice: v.wholesalePrice ?? '',
               inStock:        v.inStock        !== false,
@@ -145,13 +191,17 @@ const AdminProductForm = () => {
 
   const pickGalleryImgs = (e) => {
     const files = Array.from(e.target.files || []);
-    const newEntries = files.map((f) => ({ file: f, preview: URL.createObjectURL(f) }));
+    const newEntries = files.map((f) => ({ file: f, preview: URL.createObjectURL(f), color: '', colorMode: 'name' }));
     setGalleryFiles((prev) => [...prev, ...newEntries]);
     e.target.value = '';
   };
 
-  const removeGalleryUrl  = (url)  => setGalleryUrls((prev) => prev.filter((u) => u !== url));
-  const removeGalleryFile = (idx)  => setGalleryFiles((prev) => prev.filter((_, i) => i !== idx));
+  const removeGalleryUrl  = (idx) => setGalleryUrls((prev) => prev.filter((_, i) => i !== idx));
+  const removeGalleryFile = (idx) => setGalleryFiles((prev) => prev.filter((_, i) => i !== idx));
+
+  // Per-image color tagging
+  const setUrlColor      = (idx, patch) => setGalleryUrls((prev) => prev.map((r, i) => i === idx ? { ...r, ...patch } : r));
+  const setFileColor     = (idx, patch) => setGalleryFiles((prev) => prev.map((r, i) => i === idx ? { ...r, ...patch } : r));
 
   // Variant helpers
   const addVariant = () => setVariants((v) => [...v, blankVariant()]);
@@ -190,7 +240,6 @@ const AdminProductForm = () => {
         variants.map((v) => ({
           sku:            v.sku,
           size:           v.size,
-          color:          v.color?.trim() || '',
           retailPrice:    Number(v.retailPrice)    || 0,
           wholesalePrice: Number(v.wholesalePrice) || 0,
           inStock:        v.inStock,
@@ -205,9 +254,15 @@ const AdminProductForm = () => {
         fd.append('image', mainImgPreview);
       }
 
-      // Gallery: existing kept URLs + new files
-      fd.append('existingGallery', JSON.stringify(galleryUrls));
+      // Gallery: existing kept URLs + new files. galleryColors is aligned
+      // positionally with the final gallery order [...existing, ...new].
+      fd.append('existingGallery', JSON.stringify(galleryUrls.map((g) => g.url)));
       galleryFiles.forEach(({ file }) => fd.append('imageGallery', file));
+      const galleryColors = [
+        ...galleryUrls.map((g) => g.color?.trim() || ''),
+        ...galleryFiles.map((g) => g.color?.trim() || ''),
+      ];
+      fd.append('galleryColors', JSON.stringify(galleryColors));
 
       if (isEdit) {
         await api.upload(`/products/${id}`, fd, 'PUT');
@@ -407,32 +462,38 @@ const AdminProductForm = () => {
                 onChange={pickGalleryImgs}
                 className="hidden"
               />
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-4 items-start">
                 {/* Existing saved URLs */}
-                {galleryUrls.map((url) => (
-                  <div key={url} className="relative">
-                    <img src={url} alt="" className="w-24 h-24 object-cover rounded-lg border border-[#eee]" />
-                    <button
-                      type="button"
-                      onClick={() => removeGalleryUrl(url)}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center cursor-pointer"
-                    >
-                      <X size={11} />
-                    </button>
+                {galleryUrls.map((g, idx) => (
+                  <div key={g.url} className="w-24">
+                    <div className="relative">
+                      <img src={g.url} alt="" className="w-24 h-24 object-cover rounded-lg border border-[#eee]" />
+                      <button
+                        type="button"
+                        onClick={() => removeGalleryUrl(idx)}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center cursor-pointer"
+                      >
+                        <X size={11} />
+                      </button>
+                    </div>
+                    <ColorTag value={g.color} mode={g.colorMode} onChange={(patch) => setUrlColor(idx, patch)} />
                   </div>
                 ))}
 
                 {/* Newly picked files */}
-                {galleryFiles.map(({ preview }, idx) => (
-                  <div key={idx} className="relative">
-                    <img src={preview} alt="" className="w-24 h-24 object-cover rounded-lg border-2 border-brand-green/40" />
-                    <button
-                      type="button"
-                      onClick={() => removeGalleryFile(idx)}
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center cursor-pointer"
-                    >
-                      <X size={11} />
-                    </button>
+                {galleryFiles.map((g, idx) => (
+                  <div key={idx} className="w-24">
+                    <div className="relative">
+                      <img src={g.preview} alt="" className="w-24 h-24 object-cover rounded-lg border-2 border-brand-green/40" />
+                      <button
+                        type="button"
+                        onClick={() => removeGalleryFile(idx)}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center cursor-pointer"
+                      >
+                        <X size={11} />
+                      </button>
+                    </div>
+                    <ColorTag value={g.color} mode={g.colorMode} onChange={(patch) => setFileColor(idx, patch)} />
                   </div>
                 ))}
 
@@ -448,7 +509,7 @@ const AdminProductForm = () => {
                   </button>
                 )}
               </div>
-              <p className="font-lato text-[11px] text-[#bbb] mt-2">JPEG, PNG, WEBP — max 5 MB each — up to 10 images</p>
+              <p className="font-lato text-[11px] text-[#bbb] mt-2">JPEG, PNG, WEBP — max 5 MB each — up to 10 images. Add a color to an image to make it a selectable color option.</p>
             </div>
           </div>
         </Card>
@@ -486,22 +547,13 @@ const AdminProductForm = () => {
 
                     <p className="font-lato text-[11px] uppercase tracking-[1px] text-[#bbb]">Variant {i + 1}</p>
 
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className={labelCls}>Label / Size</label>
                         <input
                           value={v.size}
                           onChange={(e) => setVf(i, 'size', e.target.value)}
                           placeholder="e.g. 1 oz, 100ml, Small"
-                          className={inputCls}
-                        />
-                      </div>
-                      <div>
-                        <label className={labelCls}>Color <span className="text-[#bbb] font-normal">(optional)</span></label>
-                        <input
-                          value={v.color}
-                          onChange={(e) => setVf(i, 'color', e.target.value)}
-                          placeholder="e.g. Red, Ocean Blue"
                           className={inputCls}
                         />
                       </div>
@@ -638,7 +690,7 @@ const AdminProductForm = () => {
           <button
             onClick={submit}
             disabled={busy}
-            className="h-11 px-10 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60"
+            className="h-11 px-10 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60"
           >
             {busy ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Product'}
           </button>

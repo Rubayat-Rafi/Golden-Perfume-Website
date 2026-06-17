@@ -11,7 +11,7 @@ const STATUSES = ['pending', 'approved', 'rejected'];
 const FilterTab = ({ active, onClick, count, children }) => (
   <button onClick={onClick}
     className={`flex items-center gap-1.5 px-3.5 h-8 rounded-full font-lato text-[12px] capitalize whitespace-nowrap transition-colors cursor-pointer ${
-      active ? 'bg-dark-green text-linen' : 'bg-white border border-[#ddd] text-[#666] hover:border-dark-green'
+      active ? 'bg-brand-green text-white' : 'bg-white border border-[#ddd] text-[#666] hover:border-dark-green'
     }`}>
     {children}
     {count != null && (
@@ -86,7 +86,7 @@ const AppDrawer = ({ app, onClose, onChange, busyId }) => {
           {STATUSES.map((s) => (
             <button key={s} onClick={() => onChange(a._id, s, note)} disabled={busyId === a._id || a.status === s}
               className={`h-10 rounded-lg font-lato font-bold text-[12px] uppercase tracking-[0.5px] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                s === 'approved' ? 'bg-brand-green text-white hover:bg-dark-green'
+                s === 'approved' ? 'bg-brand-green text-white hover:bg-forest'
                 : s === 'rejected' ? 'border border-red-300 text-red-600 hover:bg-red-50'
                 : 'border border-[#ddd] text-[#666] hover:bg-[#f5f5f5]'
               }`}>

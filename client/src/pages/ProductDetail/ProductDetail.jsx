@@ -29,6 +29,7 @@ const ProductDetail = () => {
 
   const [activeImg,    setActiveImg]    = useState(0);
   const [selectedVar,  setSelectedVar]  = useState(0);
+  const [activeColor,  setActiveColor]  = useState(null); // index of selected color, or null
   const [qty,          setQty]          = useState(1);
 
   // Review form state
@@ -98,7 +99,7 @@ const ProductDetail = () => {
   if (!product) return null;
 
   const { name, category, categorySlug, content, description, imageGallery, image,
-          productNumber, variants, isSale, isNew, gender } = product;
+          productNumber, variants, colors, isSale, isNew, gender } = product;
 
   const isWholesale    = role === 'wholesale';
   const hasVariants    = variants?.length > 0;
@@ -107,8 +108,21 @@ const ProductDetail = () => {
   const currentWholesalePrice = currentVariant?.wholesalePrice ?? null;
   const currentSku     = currentVariant?.sku ?? productNumber;
   const currentWeight  = currentVariant?.weight ?? null;
-  const currentColor   = currentVariant?.color || null;
   const gallery        = imageGallery?.length ? imageGallery : [image];
+  // Dedupe colors by name (case-insensitive) — the same color shows only one swatch
+  const uniqueColors   = [];
+  const seenColors     = new Set();
+  (colors || []).forEach((c) => {
+    const key = (c.name || '').trim().toLowerCase();
+    if (!key || seenColors.has(key)) return;
+    seenColors.add(key);
+    uniqueColors.push(c);
+  });
+  const hasColors      = uniqueColors.length > 0;
+  // Selected color's image takes over the hero; otherwise show the active gallery image
+  const heroImage      = (activeColor != null && uniqueColors[activeColor]?.image)
+    ? uniqueColors[activeColor].image
+    : gallery[activeImg];
   const inCart         = cartItems.some((i) => i.id === id && i.variantSku === currentSku);
   const wishlisted     = isWishlisted(id);
 
@@ -185,7 +199,7 @@ const ProductDetail = () => {
           {/* ── Images ── */}
           <div className="flex flex-col gap-3">
             <div className="relative aspect-square overflow-hidden bg-white rounded-sm">
-              <img src={gallery[activeImg]} alt={name} className="w-full h-full object-cover" />
+              <img src={heroImage} alt={name} className="w-full h-full object-cover" />
               {isSale && (
                 <span className="absolute top-3 left-3 bg-gold text-dark-green font-lato font-bold text-[10px] uppercase tracking-[1px] px-2.5 py-1 rounded-sm">Sale</span>
               )}
@@ -196,8 +210,8 @@ const ProductDetail = () => {
             {gallery.length > 1 && (
               <div className="flex gap-2">
                 {gallery.map((src, i) => (
-                  <button key={i} onClick={() => setActiveImg(i)}
-                    className={`w-16 h-16 sm:w-20 sm:h-20 overflow-hidden rounded-sm border-2 transition-all duration-200 cursor-pointer ${i === activeImg ? 'border-brand-green' : 'border-transparent hover:border-sage'}`}
+                  <button key={i} onClick={() => { setActiveImg(i); setActiveColor(null); }}
+                    className={`w-16 h-16 sm:w-20 sm:h-20 overflow-hidden rounded-sm border-2 transition-all duration-200 cursor-pointer ${i === activeImg && activeColor == null ? 'border-brand-green' : 'border-transparent hover:border-sage'}`}
                   >
                     <img src={src} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -242,19 +256,29 @@ const ProductDetail = () => {
               )}
             </div>
 
+            {/* Short description */}
+            {description && (
+              <div
+                className="font-lato text-[14px] leading-relaxed text-dark-green/70 mb-5 [&_p]:mb-2 [&_a]:text-brand-green [&_a]:underline [&_a:hover]:text-dark-green"
+                dangerouslySetInnerHTML={{ __html: description }}
+              />
+            )}
+
             {/* Size selector */}
             {hasVariants && (
               <div className="mb-5">
-                <p className="font-lato text-[12px] uppercase tracking-[1.5px] text-dark-green/60 mb-2">Select Option</p>
+                <p className="font-lato text-[12px] uppercase tracking-[1.5px] text-dark-green/60 mb-2">
+                  Size <span className="text-dark-green/40">({currentVariant?.size})</span>
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {variants.map((v, i) => (
                     <button key={v.sku} onClick={() => { setSelectedVar(i); setQty(1); }}
                       disabled={!v.inStock}
                       className={`font-lato text-[12px] px-3 py-2 border rounded-sm transition-all duration-200 cursor-pointer ${
-                        i === selectedVar ? 'bg-dark-green text-linen border-dark-green' : 'bg-white text-dark-green border-linen hover:border-brand-green'
+                        i === selectedVar ? 'bg-brand-green text-white border-dark-green' : 'bg-white text-dark-green border-linen hover:border-brand-green'
                       } ${!v.inStock ? 'opacity-40 cursor-not-allowed line-through' : ''}`}
                     >
-                      {v.size}{v.color && ` · ${v.color}`}
+                      {v.size}
                       {isWholesale && v.wholesalePrice && (
                         <span className="ml-1.5 text-[10px] text-mid-green">(${v.wholesalePrice})</span>
                       )}
@@ -264,17 +288,27 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Color */}
-            {currentColor && (
+            {/* Color selector */}
+            {hasColors && (
               <div className="mb-5">
                 <p className="font-lato text-[12px] uppercase tracking-[1.5px] text-dark-green/60 mb-2">
-                  Color <span className="text-dark-green/40">({currentColor})</span>
+                  Color {activeColor != null && <span className="text-dark-green/40">({uniqueColors[activeColor].name})</span>}
                 </p>
-                <span
-                  className="inline-block w-9 h-9 rounded-sm border border-linen shadow-[inset_0_0_0_2px_#fff]"
-                  style={{ backgroundColor: currentColor }}
-                  title={currentColor}
-                />
+                <div className="flex flex-wrap gap-2.5">
+                  {uniqueColors.map((c, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setActiveColor(i)}
+                      title={c.name}
+                      aria-label={c.name}
+                      className={`w-9 h-9 rounded-full border-2 transition-all duration-200 cursor-pointer flex items-center justify-center ${
+                        activeColor === i ? 'ring-2 ring-brand-green ring-offset-2 border-white' : 'border-dark-green/25 hover:border-brand-green'
+                      }`}
+                      style={{ backgroundColor: c.name }}
+                    />
+                  ))}
+                </div>
               </div>
             )}
 
@@ -288,7 +322,7 @@ const ProductDetail = () => {
 
               <button onClick={handleAddToCart} disabled={inCart}
                 className={`flex-1 sm:flex-none h-11 px-6 flex items-center justify-center gap-2 font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-sm transition-colors duration-200 cursor-pointer ${
-                  inCart ? 'bg-sage text-dark-green/50 cursor-not-allowed' : 'bg-brand-green text-white hover:bg-dark-green'
+                  inCart ? 'bg-sage text-dark-green/50 cursor-not-allowed' : 'bg-brand-green text-white hover:bg-forest'
                 }`}
               >
                 <ShoppingCart size={15} />
@@ -304,13 +338,6 @@ const ProductDetail = () => {
                 <Heart size={17} fill={wishlisted ? 'currentColor' : 'none'} />
               </button>
             </div>
-
-            {description && (
-              <div
-                className="font-lato text-[14px] leading-relaxed text-dark-green/70 mb-4 [&_p]:mb-2 [&_a]:text-brand-green [&_a]:underline [&_a:hover]:text-dark-green"
-                dangerouslySetInnerHTML={{ __html: description }}
-              />
-            )}
 
             <div className="bg-white rounded-sm p-4 flex flex-col gap-2.5">
               {currentWeight && (
@@ -486,7 +513,7 @@ const ProductDetail = () => {
                           <button
                             type="button"
                             onClick={() => setReviewFiles((prev) => prev.filter((_, j) => j !== i))}
-                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-dark-green text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-red-500 transition-colors"
+                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-brand-green text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-red-500 transition-colors"
                           >
                             <X size={10} />
                           </button>
@@ -524,7 +551,7 @@ const ProductDetail = () => {
                   <button
                     type="submit"
                     disabled={reviewStatus === 'submitting'}
-                    className="self-start h-11 px-8 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-sm hover:bg-dark-green transition-colors disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
+                    className="self-start h-11 px-8 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-sm hover:bg-forest transition-colors disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
                   >
                     {reviewStatus === 'submitting' ? 'Submitting…' : 'Submit Review'}
                   </button>

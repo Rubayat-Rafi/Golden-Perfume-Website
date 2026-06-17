@@ -137,13 +137,13 @@ const CheckoutPage = () => {
         <div className="flex flex-col sm:flex-row gap-3">
           <Link
             to={`/track-order?order=${placed.orderNumber}`}
-            className="h-12 px-7 flex items-center gap-2 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-dark-green transition-colors"
+            className="h-12 px-7 flex items-center gap-2 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors"
           >
             <Truck size={15} /> Track Order
           </Link>
           <Link
             to="/profile"
-            className="h-12 px-7 flex items-center gap-2 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors"
+            className="h-12 px-7 flex items-center gap-2 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors"
           >
             <Package size={15} /> My Orders
           </Link>

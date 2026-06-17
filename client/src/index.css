@@ -6,14 +6,15 @@ html {
 }
 
 @theme {
-  --color-dark-green: #16361F;
-  --color-forest:     #1E5631;
-  --color-gold:       #C0974A;
-  --color-cream:      #FFFFFF;
-  --color-linen:      #FFFFFF;
-  --color-mid-green:   #5E8268;
-  --color-sage:        #AFC4B3;
-  --color-brand-green: #1E7A45;
+  /* Brand greens (from the logo) — one primary green used site-wide */
+  --color-brand-green: #217945;  /* primary — all buttons, links, accents */
+  --color-forest:      #1A5C34;  /* darker shade — button hover */
+  --color-dark-green:  #16361F;  /* deepest green — headings, text, sidebar */
+  --color-mid-green:   #5B973D;  /* logo mid green — minor accents */
+  --color-sage:        #AFC4B3;  /* muted light green — borders, disabled */
+  --color-gold:        #C2A038;  /* gold accent — prices & sale badges only */
+  --color-cream:       #FFFFFF;
+  --color-linen:       #FFFFFF;
 
   --font-playfair: "Playfair Display", serif;
   --font-lato:     "Lato", sans-serif;

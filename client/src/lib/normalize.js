@@ -30,11 +30,16 @@ export const normalizeProduct = (p) => ({
   variants: (p.variants || []).map((v) => ({
     sku:            v.sku,
     size:           v.size,
-    color:          v.color || '',
     price:          String(v.retailPrice ?? 0),
     wholesalePrice: v.wholesalePrice != null ? String(v.wholesalePrice) : undefined,
     weight:         v.weight || '',
     inStock:        v.inStock !== false,
+  })),
+
+  // Product-level colours (each with its own image)
+  colors: (p.colors || []).map((c) => ({
+    name:  c.name,
+    image: c.image || '',
   })),
 
   // Normalise review shape from API → what ProductDetail renders

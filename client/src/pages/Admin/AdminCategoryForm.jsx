@@ -287,7 +287,7 @@ const AdminCategoryForm = () => {
           <button
             onClick={submit}
             disabled={busy}
-            className="h-11 px-8 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60"
+            className="h-11 px-8 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors cursor-pointer disabled:opacity-60"
           >
             {busy ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Category'}
           </button>

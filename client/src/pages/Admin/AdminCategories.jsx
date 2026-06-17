@@ -113,7 +113,7 @@ const AdminCategories = () => {
       <PageHeader title="Categories" subtitle="Drag rows to reorder · manage your category hierarchy">
         <button
           onClick={() => navigate('/admin/categories/new')}
-          className="flex items-center gap-2 h-10 px-4 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer"
+          className="flex items-center gap-2 h-10 px-4 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1px] rounded-lg hover:bg-forest transition-colors cursor-pointer"
         >
           <Plus size={15} /> Add Category
         </button>

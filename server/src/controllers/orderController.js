@@ -1,5 +1,7 @@
 import Order, { generateOrderNumber } from '../models/Order.js';
 import Product from '../models/Product.js';
+import { sendMailAsync, ADMIN_EMAIL } from '../utils/mailer.js';
+import { orderConfirmationEmail, newOrderAdminEmail } from '../utils/emailTemplates.js';
 
 // ─── GET /api/orders/track?orderNumber=GP-xxx ──────────────────────────────
 // Public — no auth required. Returns safe tracking info for a given order.
@@ -67,6 +69,7 @@ export const createOrder = async (req, res, next) => {
 
     // ── Resolve every item against the DB ──
     const resolvedItems = [];
+    const emailItems    = []; // human-readable line items for the confirmation email
 
     for (const item of items) {
       const { variantSku, qty = 1 } = item;
@@ -98,6 +101,13 @@ export const createOrder = async (req, res, next) => {
         unitPrice:   round2(unitPrice),
         total:       round2(unitPrice * Number(qty)),
       });
+
+      emailItems.push({
+        name:  product.name,
+        size:  variant.size,
+        qty:   Number(qty),
+        total: round2(unitPrice * Number(qty)),
+      });
     }
 
     // ── Totals ──
@@ -121,6 +131,16 @@ export const createOrder = async (req, res, next) => {
       shippingAddress,
       notes,
     });
+
+    // ── Email notifications (fire-and-forget; no-op if SMTP not configured) ──
+    sendMailAsync({ to: req.user.email, ...orderConfirmationEmail({ order, items: emailItems, customerName: req.user.name }) });
+    if (ADMIN_EMAIL) {
+      sendMailAsync({
+        to: ADMIN_EMAIL,
+        replyTo: req.user.email,
+        ...newOrderAdminEmail({ order, items: emailItems, customerName: req.user.name, customerEmail: req.user.email }),
+      });
+    }
 
     res.status(201).json({ success: true, data: order });
   } catch (err) {

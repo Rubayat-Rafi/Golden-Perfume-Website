@@ -39,10 +39,12 @@ const Header = () => {
   const [userMenu, setUserMenu]     = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [hideHeader, setHideHeader] = useState(false);
   const [, height] = useWindowSize();
   const menuRef     = useRef(null);
   const userMenuRef = useRef(null);
   const headerRef   = useRef(null);
+  const lastScrollY = useRef(0);
   const { user, role, logout, roleRedirect } = useAuth();
   const { itemCount, openSidebar } = useCart();
   const { items: wishItems } = useWishlist();
@@ -60,6 +62,24 @@ const Header = () => {
         : item
     );
   }, [categories]);
+
+  // Hide header on scroll down, reveal on scroll up
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      // Always show near the top, when the mobile menu or search is open
+      if (y < 120 || openMenu || searchOpen) {
+        setHideHeader(false);
+      } else if (y > lastScrollY.current + 6) {
+        setHideHeader(true);   // scrolling down
+      } else if (y < lastScrollY.current - 6) {
+        setHideHeader(false);  // scrolling up
+      }
+      lastScrollY.current = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [openMenu, searchOpen]);
 
   // Body scroll lock for mobile menu
   useEffect(() => {
@@ -115,7 +135,7 @@ const Header = () => {
     <header className={
       isHeroPage
         ? 'absolute left-0 top-0 w-full z-101'
-        : 'sticky top-0 z-101 bg-white/97 shadow-[0_2px_12px_rgba(0,0,0,0.08)]'
+        : `sticky top-0 z-101 bg-white/97 shadow-[0_2px_12px_rgba(0,0,0,0.08)] transition-transform duration-300 ${hideHeader ? '-translate-y-full' : 'translate-y-0'}`
     }>
       {/* Promo bar */}
       {promo && (
@@ -315,7 +335,7 @@ const Header = () => {
             <Link
               to="/shop"
               onClick={() => setOpenMenu(false)}
-              className="flex items-center justify-center h-11 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[2px] rounded-[3px] hover:bg-forest transition-colors"
+              className="flex items-center justify-center h-11 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[2px] rounded-[3px] hover:bg-forest transition-colors"
             >
               Shop All Products
             </Link>

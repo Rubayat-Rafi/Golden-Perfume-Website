@@ -142,15 +142,15 @@ const LoginPage = () => {
                 </div>
                 <span className="font-lato text-[13px] text-[#666]">Remember me</span>
               </label>
-              <a href="#" className="font-lato text-[13px] text-[#999] hover:text-gold transition-colors duration-200">
+              <Link to="/forgot-password" className="font-lato text-[13px] text-[#999] hover:text-gold transition-colors duration-200">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full h-12 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full h-12 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors duration-300 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
               {submitting ? 'Signing in…' : 'Sign In'}
             </button>

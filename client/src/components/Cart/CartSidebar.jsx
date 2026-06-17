@@ -24,7 +24,7 @@ const CartSidebar = () => {
             <ShoppingBag size={18} className="text-dark-green" />
             <h2 className="font-playfair text-[17px] text-dark-green">Your Cart</h2>
             {items.length > 0 && (
-              <span className="w-5 h-5 rounded-full bg-dark-green text-white font-lato font-bold text-[10px] flex items-center justify-center">
+              <span className="w-5 h-5 rounded-full bg-brand-green text-white font-lato font-bold text-[10px] flex items-center justify-center">
                 {items.reduce((s, i) => s + i.quantity, 0)}
               </span>
             )}
@@ -47,7 +47,7 @@ const CartSidebar = () => {
               <Link
                 to="/shop"
                 onClick={closeSidebar}
-                className="mt-2 h-10 px-7 bg-dark-green text-linen font-lato font-bold text-[11px] uppercase tracking-[1.5px] rounded-sm flex items-center hover:bg-forest transition-colors"
+                className="mt-2 h-10 px-7 bg-brand-green text-white font-lato font-bold text-[11px] uppercase tracking-[1.5px] rounded-sm flex items-center hover:bg-forest transition-colors"
               >
                 Shop Now
               </Link>
@@ -126,14 +126,14 @@ const CartSidebar = () => {
               <Link
                 to="/cart"
                 onClick={closeSidebar}
-                className="flex-1 h-11 flex items-center justify-center border border-dark-green text-dark-green font-lato font-bold text-[11px] uppercase tracking-[1.5px] rounded-sm hover:bg-dark-green hover:text-linen transition-colors"
+                className="flex-1 h-11 flex items-center justify-center border border-dark-green text-dark-green font-lato font-bold text-[11px] uppercase tracking-[1.5px] rounded-sm hover:bg-forest hover:text-linen transition-colors"
               >
                 View Cart
               </Link>
               <Link
                 to="/checkout"
                 onClick={closeSidebar}
-                className="flex-1 h-11 flex items-center justify-center bg-dark-green text-linen font-lato font-bold text-[11px] uppercase tracking-[1.5px] rounded-sm hover:bg-forest transition-colors"
+                className="flex-1 h-11 flex items-center justify-center bg-brand-green text-white font-lato font-bold text-[11px] uppercase tracking-[1.5px] rounded-sm hover:bg-forest transition-colors"
               >
                 Checkout
               </Link>

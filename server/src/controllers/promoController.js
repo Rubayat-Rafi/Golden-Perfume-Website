@@ -1,4 +1,5 @@
 import PromoCode from '../models/PromoCode.js';
+import { logAction } from '../utils/audit.js';
 
 // ─── POST /api/promo/validate ──────────────────────────────────────────────
 // Auth — validate a promo code at checkout and return the discount amount
@@ -95,6 +96,7 @@ export const createPromo = async (req, res, next) => {
       expiresAt:      expiresAt || null,
     });
 
+    logAction(req, { action: 'create', entity: 'promo', entityId: promo._id, entityName: promo.code });
     res.status(201).json({ success: true, data: promo });
   } catch (err) {
     next(err);
@@ -117,6 +119,7 @@ export const updatePromo = async (req, res, next) => {
     if (!promo)
       return res.status(404).json({ success: false, message: 'Promo code not found' });
 
+    logAction(req, { action: 'update', entity: 'promo', entityId: promo._id, entityName: promo.code });
     res.json({ success: true, data: promo });
   } catch (err) {
     next(err);
@@ -135,6 +138,7 @@ export const deletePromo = async (req, res, next) => {
     if (!promo)
       return res.status(404).json({ success: false, message: 'Promo code not found' });
 
+    logAction(req, { action: 'delete', entity: 'promo', entityId: promo._id, entityName: promo.code });
     res.json({ success: true, message: 'Promo code deactivated', data: promo });
   } catch (err) {
     next(err);

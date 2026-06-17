@@ -116,7 +116,7 @@ const SidebarContent = ({ params, setParam, clearParam, categories, searchInput,
           return (
             <button key={g.label}
               onClick={() => g.value ? setParam('gender', g.value) : clearParam('gender')}
-              className={`flex-1 h-9 rounded-lg font-lato text-[12px] transition-colors cursor-pointer ${active ? 'bg-dark-green text-linen font-bold' : 'bg-white border border-[#ddd] text-[#666] hover:border-dark-green'}`}>
+              className={`flex-1 h-9 rounded-lg font-lato text-[12px] transition-colors cursor-pointer ${active ? 'bg-brand-green text-white font-bold' : 'bg-white border border-[#ddd] text-[#666] hover:border-dark-green'}`}>
               {g.label}
             </button>
           );
@@ -354,7 +354,7 @@ const ShopPage = () => {
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <button key={p}
                   onClick={() => setParam('page', String(p))}
-                  className={`w-9 h-9 font-lato text-[13px] border rounded-lg transition-colors cursor-pointer ${p === page ? 'bg-dark-green text-linen border-dark-green' : 'border-[#ddd] text-[#666] hover:border-gold'}`}
+                  className={`w-9 h-9 font-lato text-[13px] border rounded-lg transition-colors cursor-pointer ${p === page ? 'bg-brand-green text-white border-dark-green' : 'border-[#ddd] text-[#666] hover:border-gold'}`}
                 >
                   {p}
                 </button>

@@ -60,7 +60,7 @@ const WholesaleDashboard = () => {
           Apply for a wholesale account to unlock exclusive bulk pricing on our entire catalogue of fragrances and botanicals.
         </p>
         <Link to="/wholesale-apply"
-          className="inline-flex items-center justify-center h-12 px-10 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors">
+          className="inline-flex items-center justify-center h-12 px-10 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors">
           Apply Now
         </Link>
       </StatusShell>
@@ -80,7 +80,7 @@ const WholesaleDashboard = () => {
           Our team will review it and email you at <strong className="text-[#666]">{app.email}</strong> within <strong>2 business days</strong>.
         </p>
         <Link to="/shop"
-          className="inline-flex items-center justify-center h-12 px-10 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors">
+          className="inline-flex items-center justify-center h-12 px-10 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors">
           Continue Shopping
         </Link>
       </StatusShell>
@@ -101,7 +101,7 @@ const WholesaleDashboard = () => {
           </div>
         )}
         <Link to="/wholesale-apply"
-          className="inline-flex items-center justify-center h-12 px-10 bg-dark-green text-linen font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors">
+          className="inline-flex items-center justify-center h-12 px-10 bg-brand-green text-white font-lato font-bold text-[13px] uppercase tracking-[2px] rounded-lg hover:bg-forest transition-colors">
           Re-apply
         </Link>
       </StatusShell>
@@ -156,7 +156,7 @@ const WholesaleDashboard = () => {
             <strong>Wholesale pricing is active.</strong> You'll see your wholesale price on every product.
           </p>
           <Link to="/shop"
-            className="h-10 leading-10 px-6 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">
+            className="h-10 leading-10 px-6 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">
             Shop Wholesale
           </Link>
         </div>
@@ -184,7 +184,7 @@ const WholesaleDashboard = () => {
               <div className="bg-white border border-[#ececec] rounded-xl p-10 text-center">
                 <ShoppingBag size={28} className="text-[#ccc] mx-auto mb-3" />
                 <p className="font-lato text-[14px] text-[#999] mb-5">No wholesale orders yet.</p>
-                <Link to="/shop" className="inline-block h-11 leading-11 px-8 bg-dark-green text-linen font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">Place Your First Order</Link>
+                <Link to="/shop" className="inline-block h-11 leading-11 px-8 bg-brand-green text-white font-lato font-bold text-[12px] uppercase tracking-[1.5px] rounded-lg hover:bg-forest transition-colors">Place Your First Order</Link>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
